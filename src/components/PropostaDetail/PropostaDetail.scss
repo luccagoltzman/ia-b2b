@@ -113,6 +113,26 @@
     color: $primary-color;
   }
 
+  &-field-full {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+    margin-bottom: $spacing-md;
+
+    label {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: $text-secondary;
+    }
+
+    p {
+      font-size: 0.9375rem;
+      color: $text-primary;
+      line-height: 1.6;
+      margin: 0;
+    }
+  }
+
   &-status-form {
     background: $bg-tertiary;
     padding: $spacing-lg;

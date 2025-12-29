@@ -24,6 +24,20 @@ interface Proposta {
   descricao?: string
   observacoes?: string
   checkpoints?: Checkpoint[]
+  // Novos campos
+  produto?: string
+  marca?: string
+  categoria?: string
+  unidadeMedida?: string
+  valorUnitario?: number
+  quantidade?: number
+  desconto?: number
+  descontoTipo?: 'percentual' | 'valor'
+  condicoesPagamento?: string
+  prazoEntrega?: string
+  estrategiaRepresentacao?: string
+  publicoAlvo?: string
+  diferenciaisCompetitivos?: string
 }
 
 const Propostas = () => {

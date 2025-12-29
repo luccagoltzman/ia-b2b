@@ -27,6 +27,22 @@
     color: $text-primary;
   }
 
+  &-section {
+    padding: $spacing-lg;
+    background: $bg-tertiary;
+    border-radius: $radius-lg;
+    border: 1px solid $border-light;
+
+    &-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: $text-primary;
+      margin-bottom: $spacing-lg;
+      padding-bottom: $spacing-sm;
+      border-bottom: 2px solid $primary-color;
+    }
+  }
+
   &-actions {
     display: flex;
     gap: $spacing-md;

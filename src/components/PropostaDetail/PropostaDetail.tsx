@@ -21,6 +21,20 @@ interface Proposta {
   descricao?: string
   observacoes?: string
   checkpoints?: Checkpoint[]
+  // Novos campos
+  produto?: string
+  marca?: string
+  categoria?: string
+  unidadeMedida?: string
+  valorUnitario?: number
+  quantidade?: number
+  desconto?: number
+  descontoTipo?: 'percentual' | 'valor'
+  condicoesPagamento?: string
+  prazoEntrega?: string
+  estrategiaRepresentacao?: string
+  publicoAlvo?: string
+  diferenciaisCompetitivos?: string
 }
 
 interface PropostaDetailProps {
@@ -82,16 +96,13 @@ const PropostaDetail = ({ proposta, onClose, onEdit, onUpdateStatus }: PropostaD
         </div>
 
         <div className="proposta-detail-content">
+          {/* Informações Básicas */}
           <div className="proposta-detail-section">
-            <h4>Informações Gerais</h4>
+            <h4>Informações Básicas</h4>
             <div className="proposta-detail-info">
               <div className="proposta-detail-field">
                 <label>Cliente</label>
                 <span>{proposta.cliente}</span>
-              </div>
-              <div className="proposta-detail-field">
-                <label>Valor</label>
-                <span className="proposta-detail-valor">{formatCurrency(proposta.valor)}</span>
               </div>
               <div className="proposta-detail-field">
                 <label>Status Atual</label>
@@ -115,9 +126,124 @@ const PropostaDetail = ({ proposta, onClose, onEdit, onUpdateStatus }: PropostaD
             </div>
           </div>
 
+          {/* Informações do Produto */}
+          {(proposta.produto || proposta.marca || proposta.categoria) && (
+            <div className="proposta-detail-section">
+              <h4>Informações do Produto</h4>
+              <div className="proposta-detail-info">
+                {proposta.produto && (
+                  <div className="proposta-detail-field">
+                    <label>Produto</label>
+                    <span>{proposta.produto}</span>
+                  </div>
+                )}
+                {proposta.marca && (
+                  <div className="proposta-detail-field">
+                    <label>Marca</label>
+                    <span>{proposta.marca}</span>
+                  </div>
+                )}
+                {proposta.categoria && (
+                  <div className="proposta-detail-field">
+                    <label>Categoria</label>
+                    <span>{proposta.categoria}</span>
+                  </div>
+                )}
+                {proposta.unidadeMedida && (
+                  <div className="proposta-detail-field">
+                    <label>Unidade de Medida</label>
+                    <span>{proposta.unidadeMedida}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Valores e Quantidades */}
+          {(proposta.valorUnitario || proposta.quantidade || proposta.desconto) && (
+            <div className="proposta-detail-section">
+              <h4>Valores e Quantidades</h4>
+              <div className="proposta-detail-info">
+                {proposta.valorUnitario && (
+                  <div className="proposta-detail-field">
+                    <label>Valor Unitário</label>
+                    <span>{formatCurrency(proposta.valorUnitario)}</span>
+                  </div>
+                )}
+                {proposta.quantidade && (
+                  <div className="proposta-detail-field">
+                    <label>Quantidade</label>
+                    <span>{proposta.quantidade} {proposta.unidadeMedida || ''}</span>
+                  </div>
+                )}
+                {proposta.desconto && (
+                  <div className="proposta-detail-field">
+                    <label>Desconto</label>
+                    <span>
+                      {proposta.descontoTipo === 'percentual' 
+                        ? `${proposta.desconto}%` 
+                        : formatCurrency(proposta.desconto)}
+                    </span>
+                  </div>
+                )}
+                <div className="proposta-detail-field">
+                  <label>Valor Total</label>
+                  <span className="proposta-detail-valor">{formatCurrency(proposta.valor)}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Condições Comerciais */}
+          {(proposta.condicoesPagamento || proposta.prazoEntrega) && (
+            <div className="proposta-detail-section">
+              <h4>Condições Comerciais</h4>
+              <div className="proposta-detail-info">
+                {proposta.condicoesPagamento && (
+                  <div className="proposta-detail-field">
+                    <label>Condições de Pagamento</label>
+                    <span>{proposta.condicoesPagamento}</span>
+                  </div>
+                )}
+                {proposta.prazoEntrega && (
+                  <div className="proposta-detail-field">
+                    <label>Prazo de Entrega</label>
+                    <span>{proposta.prazoEntrega}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Estratégia de Representação */}
+          {(proposta.estrategiaRepresentacao || proposta.publicoAlvo || proposta.diferenciaisCompetitivos) && (
+            <div className="proposta-detail-section">
+              <h4>Estratégia de Representação</h4>
+              {proposta.estrategiaRepresentacao && (
+                <div className="proposta-detail-field-full">
+                  <label>Estratégia</label>
+                  <p>{proposta.estrategiaRepresentacao}</p>
+                </div>
+              )}
+              {proposta.publicoAlvo && (
+                <div className="proposta-detail-field-full">
+                  <label>Público-Alvo</label>
+                  <p>{proposta.publicoAlvo}</p>
+                </div>
+              )}
+              {proposta.diferenciaisCompetitivos && (
+                <div className="proposta-detail-field-full">
+                  <label>Diferenciais Competitivos</label>
+                  <p>{proposta.diferenciaisCompetitivos}</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Descrição e Observações */}
           {proposta.descricao && (
             <div className="proposta-detail-section">
-              <h4>Descrição</h4>
+              <h4>Descrição Geral</h4>
               <p>{proposta.descricao}</p>
             </div>
           )}

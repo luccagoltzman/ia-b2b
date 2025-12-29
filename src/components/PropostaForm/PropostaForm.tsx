@@ -10,6 +10,20 @@ interface Proposta {
   dataVencimento: string
   descricao?: string
   observacoes?: string
+  // Novos campos
+  produto?: string
+  marca?: string
+  categoria?: string
+  unidadeMedida?: string
+  valorUnitario?: number
+  quantidade?: number
+  desconto?: number
+  descontoTipo?: 'percentual' | 'valor'
+  condicoesPagamento?: string
+  prazoEntrega?: string
+  estrategiaRepresentacao?: string
+  publicoAlvo?: string
+  diferenciaisCompetitivos?: string
 }
 
 interface PropostaFormProps {
@@ -21,9 +35,22 @@ interface PropostaFormProps {
 const PropostaForm = ({ proposta, onSubmit, onCancel }: PropostaFormProps) => {
   const [formData, setFormData] = useState({
     cliente: '',
+    produto: '',
+    marca: '',
+    categoria: '',
+    unidadeMedida: 'unidade',
+    valorUnitario: '',
+    quantidade: '',
     valor: '',
-    descricao: '',
+    desconto: '',
+    descontoTipo: 'percentual' as 'percentual' | 'valor',
+    condicoesPagamento: '',
+    prazoEntrega: '',
     dataVencimento: '',
+    estrategiaRepresentacao: '',
+    publicoAlvo: '',
+    diferenciaisCompetitivos: '',
+    descricao: '',
     observacoes: ''
   })
   const [loading, setLoading] = useState(false)
@@ -32,22 +59,75 @@ const PropostaForm = ({ proposta, onSubmit, onCancel }: PropostaFormProps) => {
     if (proposta) {
       setFormData({
         cliente: proposta.cliente,
+        produto: proposta.produto || '',
+        marca: proposta.marca || '',
+        categoria: proposta.categoria || '',
+        unidadeMedida: proposta.unidadeMedida || 'unidade',
+        valorUnitario: proposta.valorUnitario?.toString() || '',
+        quantidade: proposta.quantidade?.toString() || '',
         valor: proposta.valor.toString(),
+        desconto: proposta.desconto?.toString() || '',
+        descontoTipo: proposta.descontoTipo || 'percentual',
+        condicoesPagamento: proposta.condicoesPagamento || '',
+        prazoEntrega: proposta.prazoEntrega || '',
+        dataVencimento: proposta.dataVencimento.split('T')[0],
+        estrategiaRepresentacao: proposta.estrategiaRepresentacao || '',
+        publicoAlvo: proposta.publicoAlvo || '',
+        diferenciaisCompetitivos: proposta.diferenciaisCompetitivos || '',
         descricao: proposta.descricao || '',
-        dataVencimento: proposta.dataVencimento.split('T')[0], // Formata para input date
         observacoes: proposta.observacoes || ''
       })
     } else {
-      // Limpa o formulário quando não há proposta (criar nova)
       setFormData({
         cliente: '',
+        produto: '',
+        marca: '',
+        categoria: '',
+        unidadeMedida: 'unidade',
+        valorUnitario: '',
+        quantidade: '',
         valor: '',
-        descricao: '',
+        desconto: '',
+        descontoTipo: 'percentual',
+        condicoesPagamento: '',
+        prazoEntrega: '',
         dataVencimento: '',
+        estrategiaRepresentacao: '',
+        publicoAlvo: '',
+        diferenciaisCompetitivos: '',
+        descricao: '',
         observacoes: ''
       })
     }
   }, [proposta])
+
+  // Calcula valor total automaticamente quando valorUnitario e quantidade são informados
+  useEffect(() => {
+    const valorUnit = parseFloat(formData.valorUnitario) || 0
+    const qtd = parseFloat(formData.quantidade) || 0
+    
+    // Só calcula se ambos estiverem preenchidos
+    if (valorUnit > 0 && qtd > 0) {
+      let valorTotal = valorUnit * qtd
+
+      if (formData.desconto) {
+        const desconto = parseFloat(formData.desconto) || 0
+        if (formData.descontoTipo === 'percentual' && desconto > 0) {
+          valorTotal = valorTotal * (1 - desconto / 100)
+        } else if (formData.descontoTipo === 'valor' && desconto > 0) {
+          valorTotal = Math.max(0, valorTotal - desconto)
+        }
+      }
+
+      const novoValor = valorTotal.toFixed(2)
+      const valorAtual = parseFloat(formData.valor) || 0
+      // Só atualiza se o valor calculado for diferente do atual (evita loop infinito)
+      if (Math.abs(valorAtual - parseFloat(novoValor)) > 0.01) {
+        setFormData(prev => ({ ...prev, valor: novoValor }))
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.valorUnitario, formData.quantidade, formData.desconto, formData.descontoTipo])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -56,7 +136,10 @@ const PropostaForm = ({ proposta, onSubmit, onCancel }: PropostaFormProps) => {
     try {
       await onSubmit({
         ...formData,
-        valor: parseFloat(formData.valor)
+        valor: parseFloat(formData.valor) || 0,
+        valorUnitario: formData.valorUnitario ? parseFloat(formData.valorUnitario) : undefined,
+        quantidade: formData.quantidade ? parseFloat(formData.quantidade) : undefined,
+        desconto: formData.desconto ? parseFloat(formData.desconto) : undefined
       })
     } finally {
       setLoading(false)
@@ -84,67 +167,254 @@ const PropostaForm = ({ proposta, onSubmit, onCancel }: PropostaFormProps) => {
         </h3>
       </div>
       <form className="proposta-form" onSubmit={handleSubmit}>
-        <div className="proposta-form-row">
+        {/* Seção: Informações Básicas */}
+        <div className="proposta-form-section">
+          <h4 className="proposta-form-section-title">Informações Básicas</h4>
+          <div className="proposta-form-row">
+            <div className="proposta-form-group">
+              <label className="proposta-form-label">Cliente *</label>
+              <input
+                type="text"
+                className="input"
+                value={formData.cliente}
+                onChange={(e) => setFormData({ ...formData, cliente: e.target.value })}
+                required
+                placeholder="Nome do cliente ou rede"
+              />
+            </div>
+            <div className="proposta-form-group">
+              <label className="proposta-form-label">Data de Vencimento *</label>
+              <input
+                type="date"
+                className="input"
+                value={formData.dataVencimento}
+                onChange={(e) => setFormData({ ...formData, dataVencimento: e.target.value })}
+                required
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Seção: Informações do Produto */}
+        <div className="proposta-form-section">
+          <h4 className="proposta-form-section-title">Informações do Produto</h4>
+          <div className="proposta-form-row">
+            <div className="proposta-form-group">
+              <label className="proposta-form-label">Produto *</label>
+              <input
+                type="text"
+                className="input"
+                value={formData.produto}
+                onChange={(e) => setFormData({ ...formData, produto: e.target.value })}
+                required
+                placeholder="Nome do produto"
+              />
+            </div>
+            <div className="proposta-form-group">
+              <label className="proposta-form-label">Marca</label>
+              <input
+                type="text"
+                className="input"
+                value={formData.marca}
+                onChange={(e) => setFormData({ ...formData, marca: e.target.value })}
+                placeholder="Marca do produto"
+              />
+            </div>
+          </div>
+          <div className="proposta-form-row">
+            <div className="proposta-form-group">
+              <label className="proposta-form-label">Categoria</label>
+              <input
+                type="text"
+                className="input"
+                value={formData.categoria}
+                onChange={(e) => setFormData({ ...formData, categoria: e.target.value })}
+                placeholder="Ex: Alimentos, Bebidas, Limpeza, etc"
+              />
+            </div>
+            <div className="proposta-form-group">
+              <label className="proposta-form-label">Unidade de Medida</label>
+              <select
+                className="input"
+                value={formData.unidadeMedida}
+                onChange={(e) => setFormData({ ...formData, unidadeMedida: e.target.value })}
+              >
+                <option value="unidade">Unidade</option>
+                <option value="kg">Quilograma (kg)</option>
+                <option value="g">Grama (g)</option>
+                <option value="litro">Litro (L)</option>
+                <option value="ml">Mililitro (mL)</option>
+                <option value="caixa">Caixa</option>
+                <option value="pacote">Pacote</option>
+                <option value="fardo">Fardo</option>
+                <option value="duzia">Dúzia</option>
+                <option value="metro">Metro (m)</option>
+                <option value="outro">Outro</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Seção: Valores e Quantidades */}
+        <div className="proposta-form-section">
+          <h4 className="proposta-form-section-title">Valores e Quantidades</h4>
+          <div className="proposta-form-row">
+            <div className="proposta-form-group">
+              <label className="proposta-form-label">Valor Unitário (R$)</label>
+              <input
+                type="number"
+                className="input"
+                value={formData.valorUnitario}
+                onChange={(e) => setFormData({ ...formData, valorUnitario: e.target.value })}
+                step="0.01"
+                min="0"
+                placeholder="0.00"
+              />
+            </div>
+            <div className="proposta-form-group">
+              <label className="proposta-form-label">Quantidade</label>
+              <input
+                type="number"
+                className="input"
+                value={formData.quantidade}
+                onChange={(e) => setFormData({ ...formData, quantidade: e.target.value })}
+                step="0.01"
+                min="0"
+                placeholder="0"
+              />
+            </div>
+          </div>
+          <div className="proposta-form-row">
+            <div className="proposta-form-group">
+              <label className="proposta-form-label">Desconto</label>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input
+                  type="number"
+                  className="input"
+                  value={formData.desconto}
+                  onChange={(e) => setFormData({ ...formData, desconto: e.target.value })}
+                  step="0.01"
+                  min="0"
+                  placeholder="0"
+                  style={{ flex: 1 }}
+                />
+                <select
+                  className="input"
+                  value={formData.descontoTipo}
+                  onChange={(e) => setFormData({ ...formData, descontoTipo: e.target.value as 'percentual' | 'valor' })}
+                  style={{ width: '120px' }}
+                >
+                  <option value="percentual">%</option>
+                  <option value="valor">R$</option>
+                </select>
+              </div>
+            </div>
+            <div className="proposta-form-group">
+              <label className="proposta-form-label">Valor Total (R$) *</label>
+              <input
+                type="number"
+                className="input"
+                value={formData.valor}
+                onChange={(e) => setFormData({ ...formData, valor: e.target.value })}
+                required
+                step="0.01"
+                min="0"
+                placeholder="0.00"
+                readOnly={!!(formData.valorUnitario && formData.quantidade)}
+                style={{ backgroundColor: formData.valorUnitario && formData.quantidade ? '#f5f5f5' : undefined }}
+              />
+              {formData.valorUnitario && formData.quantidade && (
+                <small style={{ color: '#666', fontSize: '0.75rem' }}>Calculado automaticamente</small>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Seção: Condições Comerciais */}
+        <div className="proposta-form-section">
+          <h4 className="proposta-form-section-title">Condições Comerciais</h4>
+          <div className="proposta-form-row">
+            <div className="proposta-form-group">
+              <label className="proposta-form-label">Condições de Pagamento</label>
+              <input
+                type="text"
+                className="input"
+                value={formData.condicoesPagamento}
+                onChange={(e) => setFormData({ ...formData, condicoesPagamento: e.target.value })}
+                placeholder="Ex: 30/60/90 dias, Boleto, Cartão, etc"
+              />
+            </div>
+            <div className="proposta-form-group">
+              <label className="proposta-form-label">Prazo de Entrega</label>
+              <input
+                type="text"
+                className="input"
+                value={formData.prazoEntrega}
+                onChange={(e) => setFormData({ ...formData, prazoEntrega: e.target.value })}
+                placeholder="Ex: 15 dias, Imediato, etc"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Seção: Estratégia de Representação */}
+        <div className="proposta-form-section">
+          <h4 className="proposta-form-section-title">Estratégia de Representação</h4>
           <div className="proposta-form-group">
-            <label className="proposta-form-label">Cliente *</label>
+            <label className="proposta-form-label">Estratégia de Representação</label>
+            <textarea
+              className="textarea"
+              value={formData.estrategiaRepresentacao}
+              onChange={(e) => setFormData({ ...formData, estrategiaRepresentacao: e.target.value })}
+              placeholder="Descreva a estratégia que será adotada para representar este produto (ex: ações promocionais, parcerias, eventos, etc)"
+              rows={3}
+            />
+          </div>
+          <div className="proposta-form-group">
+            <label className="proposta-form-label">Público-Alvo</label>
             <input
               type="text"
               className="input"
-              value={formData.cliente}
-              onChange={(e) => setFormData({ ...formData, cliente: e.target.value })}
-              required
-              placeholder="Nome do cliente ou rede"
+              value={formData.publicoAlvo}
+              onChange={(e) => setFormData({ ...formData, publicoAlvo: e.target.value })}
+              placeholder="Ex: Consumidores classe A/B, Famílias, Jovens, etc"
             />
           </div>
-
           <div className="proposta-form-group">
-            <label className="proposta-form-label">Valor (R$) *</label>
-            <input
-              type="number"
-              className="input"
-              value={formData.valor}
-              onChange={(e) => setFormData({ ...formData, valor: e.target.value })}
-              required
-              step="0.01"
-              min="0"
-              placeholder="0.00"
+            <label className="proposta-form-label">Diferenciais Competitivos</label>
+            <textarea
+              className="textarea"
+              value={formData.diferenciaisCompetitivos}
+              onChange={(e) => setFormData({ ...formData, diferenciaisCompetitivos: e.target.value })}
+              placeholder="Liste os principais diferenciais deste produto em relação à concorrência"
+              rows={3}
             />
           </div>
         </div>
 
-        <div className="proposta-form-group">
-          <label className="proposta-form-label">Descrição</label>
-          <textarea
-            className="textarea"
-            value={formData.descricao}
-            onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
-            placeholder="Descreva os produtos/serviços da proposta"
-            rows={4}
-          />
-        </div>
-
-        <div className="proposta-form-row">
+        {/* Seção: Informações Adicionais */}
+        <div className="proposta-form-section">
+          <h4 className="proposta-form-section-title">Informações Adicionais</h4>
           <div className="proposta-form-group">
-            <label className="proposta-form-label">Data de Vencimento *</label>
-            <input
-              type="date"
-              className="input"
-              value={formData.dataVencimento}
-              onChange={(e) => setFormData({ ...formData, dataVencimento: e.target.value })}
-              required
+            <label className="proposta-form-label">Descrição Geral</label>
+            <textarea
+              className="textarea"
+              value={formData.descricao}
+              onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
+              placeholder="Descrição geral da proposta e produtos/serviços oferecidos"
+              rows={4}
             />
           </div>
-        </div>
-
-        <div className="proposta-form-group">
-          <label className="proposta-form-label">Observações</label>
-          <textarea
-            className="textarea"
-            value={formData.observacoes}
-            onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
-            placeholder="Informações adicionais"
-            rows={3}
-          />
+          <div className="proposta-form-group">
+            <label className="proposta-form-label">Observações</label>
+            <textarea
+              className="textarea"
+              value={formData.observacoes}
+              onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
+              placeholder="Observações adicionais sobre a proposta"
+              rows={3}
+            />
+          </div>
         </div>
 
         <div className="proposta-form-actions">
