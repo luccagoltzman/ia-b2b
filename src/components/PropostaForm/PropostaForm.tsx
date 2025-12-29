@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { apiService } from '../../services/apiService'
 import './PropostaForm.scss'
 
 interface Proposta {
@@ -147,13 +148,53 @@ const PropostaForm = ({ proposta, onSubmit, onCancel }: PropostaFormProps) => {
   }
 
   const handleGerarComIA = async () => {
+    // Validação dos campos obrigatórios
+    if (!formData.cliente || !formData.produto || !formData.marca || !formData.unidadeMedida || !formData.valorUnitario || !formData.quantidade) {
+      alert('Por favor, preencha todos os campos obrigatórios:\n- Cliente\n- Produto\n- Marca\n- Unidade de Medida\n- Valor Unitário\n- Quantidade')
+      return
+    }
+
     setLoading(true)
     try {
-      // Esta função será implementada no backend
-      // Por enquanto, apenas simula
-      alert('Funcionalidade será implementada no backend')
-    } catch (error) {
+      const propostaGerada = await apiService.gerarPropostaComIA({
+        cliente: formData.cliente,
+        produto: formData.produto,
+        marca: formData.marca,
+        unidadeMedida: formData.unidadeMedida,
+        valorUnitario: parseFloat(formData.valorUnitario),
+        quantidade: parseFloat(formData.quantidade)
+      })
+
+      // Preenche o formulário com os dados gerados pela IA
+      setFormData(prev => ({
+        ...prev,
+        categoria: propostaGerada.categoria || prev.categoria,
+        desconto: propostaGerada.desconto?.toString() || prev.desconto,
+        descontoTipo: propostaGerada.descontoTipo || prev.descontoTipo,
+        condicoesPagamento: propostaGerada.condicoesPagamento || prev.condicoesPagamento,
+        prazoEntrega: propostaGerada.prazoEntrega || prev.prazoEntrega,
+        estrategiaRepresentacao: propostaGerada.estrategiaRepresentacao || prev.estrategiaRepresentacao,
+        publicoAlvo: propostaGerada.publicoAlvo || prev.publicoAlvo,
+        diferenciaisCompetitivos: propostaGerada.diferenciaisCompetitivos || prev.diferenciaisCompetitivos,
+        descricao: propostaGerada.descricao || prev.descricao,
+        observacoes: propostaGerada.observacoes || prev.observacoes,
+        valor: propostaGerada.valor?.toString() || prev.valor
+      }))
+
+      alert('Proposta gerada com sucesso! Revise os campos preenchidos pela IA e ajuste se necessário.')
+    } catch (error: any) {
       console.error('Erro ao gerar proposta com IA:', error)
+      let errorMessage = 'Erro ao gerar proposta com IA.'
+      
+      if (error.response?.status === 404) {
+        errorMessage = 'Endpoint não encontrado. O backend precisa implementar POST /api/propostas/gerar-com-ia'
+      } else if (error.response?.status === 400) {
+        errorMessage = error.response.data?.message || 'Dados inválidos. Verifique os campos obrigatórios.'
+      } else if (error.message) {
+        errorMessage = error.message
+      }
+      
+      alert(errorMessage)
     } finally {
       setLoading(false)
     }

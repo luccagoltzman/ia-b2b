@@ -82,6 +82,18 @@ export const apiService = {
     return response.data
   },
 
+  async gerarPropostaComIA(dadosBasicos: {
+    cliente: string
+    produto: string
+    marca: string
+    unidadeMedida: string
+    valorUnitario: number
+    quantidade: number
+  }) {
+    const response = await api.post('/propostas/gerar-com-ia', dadosBasicos)
+    return response.data
+  },
+
   // Visitas
   async getVisitas() {
     const response = await api.get('/visitas')
