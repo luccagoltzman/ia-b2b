@@ -39,6 +39,25 @@ interface Proposta {
   estrategiaRepresentacao?: string
   publicoAlvo?: string
   diferenciaisCompetitivos?: string
+  // Novos campos - Cliente
+  clienteCnpj?: string
+  clienteEndereco?: string
+  clienteNumero?: string
+  clienteBairro?: string
+  clienteCidade?: string
+  clienteCep?: string
+  clienteEstado?: string
+  clienteTelefone?: string
+  clienteEmail?: string
+  clienteNomeFantasia?: string
+  // Novos campos - Produto
+  produtoCodigo?: string
+  aliquotaIpi?: number
+  // Novos campos - Comercial
+  valorFrete?: number
+  tipoPedido?: string
+  transportadora?: string
+  informacoesAdicionais?: string
 }
 
 const formatCurrency = (value: number) => {
@@ -147,27 +166,249 @@ export const exportService = {
     doc.save(`propostas_${new Date().toISOString().split('T')[0]}.pdf`)
   },
 
-  // Exportar proposta individual para PDF
+  // Exportar proposta individual para PDF (formato de pedido comercial)
   exportPropostaToPDF(proposta: Proposta) {
     const doc = new jsPDF('p', 'mm', 'a4')
     
-    // Cabeçalho
+    // Configurações
+    const marginLeft = 15
+    const marginRight = 15
+    const pageWidth = doc.internal.pageSize.getWidth()
+    const contentWidth = pageWidth - marginLeft - marginRight
+    
+    // Cabeçalho - Informações da Empresa Representante
     doc.setFillColor(79, 70, 229) // #4f46e5
-    doc.rect(0, 0, doc.internal.pageSize.getWidth(), 50, 'F')
+    doc.rect(0, 0, pageWidth, 35, 'F')
     
     doc.setTextColor(255, 255, 255)
-    doc.setFontSize(20)
+    doc.setFontSize(16)
     doc.setFont('helvetica', 'bold')
-    doc.text('PROPOSTA COMERCIAL', 20, 30)
+    doc.text('PEDIDO N°', marginLeft, 15)
     
-    doc.setFontSize(10)
-    doc.setFont('helvetica', 'normal')
-    doc.text(`Data: ${formatDate(proposta.dataCriacao)}`, 20, 40)
-    doc.text(`Vencimento: ${formatDate(proposta.dataVencimento)}`, doc.internal.pageSize.getWidth() - 100, 40)
+    // Número do pedido (usar ID ou gerar)
+    const pedidoNumero = proposta.id.substring(0, 8).toUpperCase() || '0000'
+    doc.setFontSize(14)
+    doc.text(pedidoNumero, marginLeft + 35, 15)
+    
+    // Empresa Representada (Marca)
+    if (proposta.marca) {
+      doc.setFontSize(12)
+      doc.setFont('helvetica', 'normal')
+      doc.text(`Representada: ${proposta.marca}`, marginLeft, 25)
+    }
     
     // Resetar cor
     doc.setTextColor(15, 23, 42) // #0f172a
-    let yPos = 60
+    let yPos = 45
+    
+    // Informações do Cliente
+    doc.setFontSize(10)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Cliente:', marginLeft, yPos)
+    doc.setFont('helvetica', 'normal')
+    doc.text(proposta.cliente || '-', marginLeft + 20, yPos)
+    yPos += 6
+    
+    if (proposta.clienteNomeFantasia) {
+      doc.setFont('helvetica', 'bold')
+      doc.text('Nome Fantasia:', marginLeft, yPos)
+      doc.setFont('helvetica', 'normal')
+      doc.text(proposta.clienteNomeFantasia, marginLeft + 35, yPos)
+      yPos += 6
+    }
+    
+    if (proposta.clienteCnpj) {
+      doc.setFont('helvetica', 'bold')
+      doc.text('CNPJ:', marginLeft, yPos)
+      doc.setFont('helvetica', 'normal')
+      doc.text(proposta.clienteCnpj, marginLeft + 20, yPos)
+      yPos += 6
+    }
+    
+    // Endereço completo
+    if (proposta.clienteEndereco || proposta.clienteNumero || proposta.clienteBairro || 
+        proposta.clienteCidade || proposta.clienteCep || proposta.clienteEstado) {
+      const enderecoCompleto = [
+        proposta.clienteEndereco,
+        proposta.clienteNumero ? `N° ${proposta.clienteNumero}` : '',
+        proposta.clienteBairro ? `Bairro: ${proposta.clienteBairro}` : '',
+        proposta.clienteCidade ? `Cidade: ${proposta.clienteCidade}` : '',
+        proposta.clienteCep ? `CEP: ${proposta.clienteCep}` : '',
+        proposta.clienteEstado ? `Estado: ${proposta.clienteEstado}` : ''
+      ].filter(Boolean).join(' - ')
+      
+      doc.setFont('helvetica', 'bold')
+      doc.text('Endereço:', marginLeft, yPos)
+      doc.setFont('helvetica', 'normal')
+      const enderecoLines = doc.splitTextToSize(enderecoCompleto, contentWidth - 25)
+      doc.text(enderecoLines, marginLeft + 25, yPos)
+      yPos += enderecoLines.length * 5 + 2
+    }
+    
+    if (proposta.clienteTelefone) {
+      doc.setFont('helvetica', 'bold')
+      doc.text('Telefone:', marginLeft, yPos)
+      doc.setFont('helvetica', 'normal')
+      doc.text(proposta.clienteTelefone, marginLeft + 25, yPos)
+      yPos += 6
+    }
+    
+    if (proposta.clienteEmail) {
+      doc.setFont('helvetica', 'bold')
+      doc.text('E-mail:', marginLeft, yPos)
+      doc.setFont('helvetica', 'normal')
+      doc.text(proposta.clienteEmail, marginLeft + 20, yPos)
+      yPos += 10
+    }
+    
+    // Tabela de Produtos
+    yPos += 5
+    const tableData: any[][] = []
+    
+    // Calcular valores
+    const valorUnitario = proposta.valorUnitario || 0
+    const quantidade = proposta.quantidade || 0
+    const aliquotaIpi = proposta.aliquotaIpi || 0
+    const precoLiquido = valorUnitario
+    const precoComImpostos = precoLiquido * (1 + aliquotaIpi / 100)
+    const subtotal = precoComImpostos * quantidade
+    
+    tableData.push([
+      '1',
+      proposta.produtoCodigo || '-',
+      proposta.produto || '-',
+      quantidade.toString(),
+      formatCurrency(precoLiquido),
+      `${aliquotaIpi}%`,
+      formatCurrency(precoComImpostos),
+      formatCurrency(subtotal)
+    ])
+    
+    // Cabeçalho da tabela
+    autoTable(doc, {
+      startY: yPos,
+      head: [['#', 'Código', 'Produto', 'Qtde.', 'Preço Líquido', 'Alíq. IPI', 'Preço Líq. c/ Impostos', 'Subtotal']],
+      body: tableData,
+      theme: 'striped',
+      headStyles: {
+        fillColor: [79, 70, 229], // #4f46e5
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        fontSize: 9
+      },
+      bodyStyles: {
+        fontSize: 9,
+        textColor: [15, 23, 42]
+      },
+      alternateRowStyles: {
+        fillColor: [248, 250, 252] // #f8fafc
+      },
+      styles: {
+        cellPadding: 2,
+        lineColor: [226, 232, 240],
+        lineWidth: 0.5
+      },
+      columnStyles: {
+        0: { cellWidth: 10 }, // #
+        1: { cellWidth: 30 }, // Código
+        2: { cellWidth: 50 }, // Produto
+        3: { cellWidth: 20 }, // Qtde
+        4: { cellWidth: 30 }, // Preço Líquido
+        5: { cellWidth: 25 }, // Alíq IPI
+        6: { cellWidth: 35 }, // Preço c/ Impostos
+        7: { cellWidth: 30 }  // Subtotal
+      },
+      margin: { left: marginLeft, right: marginRight }
+    })
+    
+    yPos = (doc as any).lastAutoTable.finalY + 10
+    
+    // Valor do Frete
+    const valorFrete = proposta.valorFrete || 0
+    doc.setFontSize(10)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Valor do frete:', marginLeft, yPos)
+    doc.setFont('helvetica', 'normal')
+    doc.text(formatCurrency(valorFrete), pageWidth - marginRight - 40, yPos, { align: 'right' })
+    yPos += 8
+    
+    // Valor Total
+    const valorTotal = subtotal + valorFrete
+    doc.setFontSize(12)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Valor total:', marginLeft, yPos)
+    doc.setFont('helvetica', 'bold')
+    doc.text(formatCurrency(valorTotal), pageWidth - marginRight - 40, yPos, { align: 'right' })
+    yPos += 12
+    
+    // Informações Comerciais
+    doc.setFontSize(10)
+    doc.setFont('helvetica', 'normal')
+    
+    if (proposta.condicoesPagamento) {
+      doc.setFont('helvetica', 'bold')
+      doc.text('Condição de Pagamento:', marginLeft, yPos)
+      doc.setFont('helvetica', 'normal')
+      doc.text(proposta.condicoesPagamento, marginLeft + 50, yPos)
+      yPos += 6
+    }
+    
+    doc.setFont('helvetica', 'bold')
+    doc.text('Data de Emissão:', pageWidth - marginRight - 60, yPos - 6)
+    doc.setFont('helvetica', 'normal')
+    doc.text(formatDate(proposta.dataCriacao), pageWidth - marginRight - 20, yPos - 6, { align: 'right' })
+    
+    if (proposta.clienteEmail) {
+      doc.setFont('helvetica', 'normal')
+      doc.text(`e-mail: ${proposta.clienteEmail}`, marginLeft, yPos)
+      yPos += 6
+    }
+    
+    if (proposta.tipoPedido) {
+      doc.setFont('helvetica', 'bold')
+      doc.text('Tipo de pedido:', marginLeft, yPos)
+      doc.setFont('helvetica', 'normal')
+      doc.text(proposta.tipoPedido.charAt(0).toUpperCase() + proposta.tipoPedido.slice(1), marginLeft + 40, yPos)
+      yPos += 6
+    }
+    
+    if (proposta.transportadora) {
+      doc.setFont('helvetica', 'bold')
+      doc.text('Transportadora:', marginLeft, yPos)
+      doc.setFont('helvetica', 'normal')
+      doc.text(proposta.transportadora, marginLeft + 40, yPos)
+      yPos += 6
+    }
+    
+    if (proposta.informacoesAdicionais) {
+      doc.setFont('helvetica', 'bold')
+      doc.text('Informações Adicionais:', marginLeft, yPos)
+      doc.setFont('helvetica', 'normal')
+      const infoLines = doc.splitTextToSize(proposta.informacoesAdicionais, contentWidth - 50)
+      doc.text(infoLines, marginLeft + 50, yPos)
+      yPos += infoLines.length * 5 + 6
+    }
+    
+    if (proposta.clienteTelefone) {
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(9)
+      doc.text(`Contatos ${proposta.clienteTelefone}`, marginLeft, yPos)
+    }
+    
+    // Rodapé
+    doc.setFontSize(8)
+    doc.setTextColor(71, 85, 105)
+    doc.text(
+      `Gerado em ${new Date().toLocaleString('pt-BR')}`,
+      pageWidth / 2,
+      doc.internal.pageSize.getHeight() - 10,
+      { align: 'center' }
+    )
+    
+    // Salvar arquivo
+    const fileName = `pedido_${pedidoNumero}_${proposta.cliente.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`
+    doc.save(fileName)
+  },
     
     // Informações Básicas
     doc.setFontSize(14)

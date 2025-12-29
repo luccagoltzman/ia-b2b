@@ -11,7 +11,7 @@ interface Proposta {
   dataVencimento: string
   descricao?: string
   observacoes?: string
-  // Novos campos
+  // Campos existentes
   produto?: string
   marca?: string
   categoria?: string
@@ -25,6 +25,25 @@ interface Proposta {
   estrategiaRepresentacao?: string
   publicoAlvo?: string
   diferenciaisCompetitivos?: string
+  // Novos campos - Cliente
+  clienteCnpj?: string
+  clienteEndereco?: string
+  clienteNumero?: string
+  clienteBairro?: string
+  clienteCidade?: string
+  clienteCep?: string
+  clienteEstado?: string
+  clienteTelefone?: string
+  clienteEmail?: string
+  clienteNomeFantasia?: string
+  // Novos campos - Produto
+  produtoCodigo?: string
+  aliquotaIpi?: number
+  // Novos campos - Comercial
+  valorFrete?: number
+  tipoPedido?: string
+  transportadora?: string
+  informacoesAdicionais?: string
 }
 
 interface PropostaFormProps {
@@ -36,18 +55,34 @@ interface PropostaFormProps {
 const PropostaForm = ({ proposta, onSubmit, onCancel }: PropostaFormProps) => {
   const [formData, setFormData] = useState({
     cliente: '',
+    clienteCnpj: '',
+    clienteEndereco: '',
+    clienteNumero: '',
+    clienteBairro: '',
+    clienteCidade: '',
+    clienteCep: '',
+    clienteEstado: '',
+    clienteTelefone: '',
+    clienteEmail: '',
+    clienteNomeFantasia: '',
     produto: '',
+    produtoCodigo: '',
     marca: '',
     categoria: '',
     unidadeMedida: 'unidade',
     valorUnitario: '',
+    aliquotaIpi: '',
     quantidade: '',
     valor: '',
     desconto: '',
     descontoTipo: 'percentual' as 'percentual' | 'valor',
+    valorFrete: '',
     condicoesPagamento: '',
     prazoEntrega: '',
     dataVencimento: '',
+    tipoPedido: 'venda',
+    transportadora: '',
+    informacoesAdicionais: '',
     estrategiaRepresentacao: '',
     publicoAlvo: '',
     diferenciaisCompetitivos: '',
@@ -60,18 +95,34 @@ const PropostaForm = ({ proposta, onSubmit, onCancel }: PropostaFormProps) => {
     if (proposta) {
       setFormData({
         cliente: proposta.cliente,
+        clienteCnpj: proposta.clienteCnpj || '',
+        clienteEndereco: proposta.clienteEndereco || '',
+        clienteNumero: proposta.clienteNumero || '',
+        clienteBairro: proposta.clienteBairro || '',
+        clienteCidade: proposta.clienteCidade || '',
+        clienteCep: proposta.clienteCep || '',
+        clienteEstado: proposta.clienteEstado || '',
+        clienteTelefone: proposta.clienteTelefone || '',
+        clienteEmail: proposta.clienteEmail || '',
+        clienteNomeFantasia: proposta.clienteNomeFantasia || '',
         produto: proposta.produto || '',
+        produtoCodigo: proposta.produtoCodigo || '',
         marca: proposta.marca || '',
         categoria: proposta.categoria || '',
         unidadeMedida: proposta.unidadeMedida || 'unidade',
         valorUnitario: proposta.valorUnitario?.toString() || '',
+        aliquotaIpi: proposta.aliquotaIpi?.toString() || '',
         quantidade: proposta.quantidade?.toString() || '',
         valor: proposta.valor.toString(),
         desconto: proposta.desconto?.toString() || '',
         descontoTipo: proposta.descontoTipo || 'percentual',
+        valorFrete: proposta.valorFrete?.toString() || '',
         condicoesPagamento: proposta.condicoesPagamento || '',
         prazoEntrega: proposta.prazoEntrega || '',
         dataVencimento: proposta.dataVencimento.split('T')[0],
+        tipoPedido: proposta.tipoPedido || 'venda',
+        transportadora: proposta.transportadora || '',
+        informacoesAdicionais: proposta.informacoesAdicionais || '',
         estrategiaRepresentacao: proposta.estrategiaRepresentacao || '',
         publicoAlvo: proposta.publicoAlvo || '',
         diferenciaisCompetitivos: proposta.diferenciaisCompetitivos || '',
@@ -81,18 +132,34 @@ const PropostaForm = ({ proposta, onSubmit, onCancel }: PropostaFormProps) => {
     } else {
       setFormData({
         cliente: '',
+        clienteCnpj: '',
+        clienteEndereco: '',
+        clienteNumero: '',
+        clienteBairro: '',
+        clienteCidade: '',
+        clienteCep: '',
+        clienteEstado: '',
+        clienteTelefone: '',
+        clienteEmail: '',
+        clienteNomeFantasia: '',
         produto: '',
+        produtoCodigo: '',
         marca: '',
         categoria: '',
         unidadeMedida: 'unidade',
         valorUnitario: '',
+        aliquotaIpi: '',
         quantidade: '',
         valor: '',
         desconto: '',
         descontoTipo: 'percentual',
+        valorFrete: '',
         condicoesPagamento: '',
         prazoEntrega: '',
         dataVencimento: '',
+        tipoPedido: 'venda',
+        transportadora: '',
+        informacoesAdicionais: '',
         estrategiaRepresentacao: '',
         publicoAlvo: '',
         diferenciaisCompetitivos: '',
@@ -140,7 +207,9 @@ const PropostaForm = ({ proposta, onSubmit, onCancel }: PropostaFormProps) => {
         valor: parseFloat(formData.valor) || 0,
         valorUnitario: formData.valorUnitario ? parseFloat(formData.valorUnitario) : undefined,
         quantidade: formData.quantidade ? parseFloat(formData.quantidade) : undefined,
-        desconto: formData.desconto ? parseFloat(formData.desconto) : undefined
+        desconto: formData.desconto ? parseFloat(formData.desconto) : undefined,
+        aliquotaIpi: formData.aliquotaIpi ? parseFloat(formData.aliquotaIpi) : undefined,
+        valorFrete: formData.valorFrete ? parseFloat(formData.valorFrete) : undefined
       })
     } finally {
       setLoading(false)
@@ -171,6 +240,7 @@ const PropostaForm = ({ proposta, onSubmit, onCancel }: PropostaFormProps) => {
         categoria: propostaGerada.categoria || prev.categoria,
         desconto: propostaGerada.desconto?.toString() || prev.desconto,
         descontoTipo: propostaGerada.descontoTipo || prev.descontoTipo,
+        aliquotaIpi: propostaGerada.aliquotaIpi?.toString() || prev.aliquotaIpi,
         condicoesPagamento: propostaGerada.condicoesPagamento || prev.condicoesPagamento,
         prazoEntrega: propostaGerada.prazoEntrega || prev.prazoEntrega,
         estrategiaRepresentacao: propostaGerada.estrategiaRepresentacao || prev.estrategiaRepresentacao,
@@ -231,6 +301,120 @@ const PropostaForm = ({ proposta, onSubmit, onCancel }: PropostaFormProps) => {
                 value={formData.dataVencimento}
                 onChange={(e) => setFormData({ ...formData, dataVencimento: e.target.value })}
                 required
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Seção: Dados do Cliente */}
+        <div className="proposta-form-section">
+          <h4 className="proposta-form-section-title">Dados do Cliente</h4>
+          <div className="proposta-form-row">
+            <div className="proposta-form-group">
+              <label className="proposta-form-label">CNPJ</label>
+              <input
+                type="text"
+                className="input"
+                value={formData.clienteCnpj}
+                onChange={(e) => setFormData({ ...formData, clienteCnpj: e.target.value })}
+                placeholder="00.000.000/0000-00"
+              />
+            </div>
+            <div className="proposta-form-group">
+              <label className="proposta-form-label">Nome Fantasia</label>
+              <input
+                type="text"
+                className="input"
+                value={formData.clienteNomeFantasia}
+                onChange={(e) => setFormData({ ...formData, clienteNomeFantasia: e.target.value })}
+                placeholder="Nome fantasia do cliente"
+              />
+            </div>
+          </div>
+          <div className="proposta-form-row">
+            <div className="proposta-form-group" style={{ flex: 2 }}>
+              <label className="proposta-form-label">Endereço</label>
+              <input
+                type="text"
+                className="input"
+                value={formData.clienteEndereco}
+                onChange={(e) => setFormData({ ...formData, clienteEndereco: e.target.value })}
+                placeholder="Rua, Avenida, etc"
+              />
+            </div>
+            <div className="proposta-form-group">
+              <label className="proposta-form-label">Número</label>
+              <input
+                type="text"
+                className="input"
+                value={formData.clienteNumero}
+                onChange={(e) => setFormData({ ...formData, clienteNumero: e.target.value })}
+                placeholder="Número"
+              />
+            </div>
+            <div className="proposta-form-group">
+              <label className="proposta-form-label">Bairro</label>
+              <input
+                type="text"
+                className="input"
+                value={formData.clienteBairro}
+                onChange={(e) => setFormData({ ...formData, clienteBairro: e.target.value })}
+                placeholder="Bairro"
+              />
+            </div>
+          </div>
+          <div className="proposta-form-row">
+            <div className="proposta-form-group">
+              <label className="proposta-form-label">Cidade</label>
+              <input
+                type="text"
+                className="input"
+                value={formData.clienteCidade}
+                onChange={(e) => setFormData({ ...formData, clienteCidade: e.target.value })}
+                placeholder="Cidade"
+              />
+            </div>
+            <div className="proposta-form-group">
+              <label className="proposta-form-label">Estado</label>
+              <input
+                type="text"
+                className="input"
+                value={formData.clienteEstado}
+                onChange={(e) => setFormData({ ...formData, clienteEstado: e.target.value })}
+                placeholder="UF"
+                maxLength={2}
+              />
+            </div>
+            <div className="proposta-form-group">
+              <label className="proposta-form-label">CEP</label>
+              <input
+                type="text"
+                className="input"
+                value={formData.clienteCep}
+                onChange={(e) => setFormData({ ...formData, clienteCep: e.target.value })}
+                placeholder="00000-000"
+              />
+            </div>
+          </div>
+          <div className="proposta-form-row">
+            <div className="proposta-form-group">
+              <label className="proposta-form-label">Telefone</label>
+              <input
+                type="text"
+                className="input"
+                value={formData.clienteTelefone}
+                onChange={(e) => setFormData({ ...formData, clienteTelefone: e.target.value })}
+                placeholder="(00) 00000-0000"
+              />
+            </div>
+            <div className="proposta-form-group">
+              <label className="proposta-form-label">E-mail</label>
+              <input
+                type="email"
+                className="input"
+                value={formData.clienteEmail}
+                onChange={(e) => setFormData({ ...formData, clienteEmail: e.target.value })}
+                placeholder="email@exemplo.com"
               />
             </div>
           </div>
@@ -309,6 +493,19 @@ const PropostaForm = ({ proposta, onSubmit, onCancel }: PropostaFormProps) => {
                 onChange={(e) => setFormData({ ...formData, valorUnitario: e.target.value })}
                 step="0.01"
                 min="0"
+                placeholder="0.00"
+              />
+            </div>
+            <div className="proposta-form-group">
+              <label className="proposta-form-label">Alíquota IPI (%)</label>
+              <input
+                type="number"
+                className="input"
+                value={formData.aliquotaIpi}
+                onChange={(e) => setFormData({ ...formData, aliquotaIpi: e.target.value })}
+                step="0.01"
+                min="0"
+                max="100"
                 placeholder="0.00"
               />
             </div>

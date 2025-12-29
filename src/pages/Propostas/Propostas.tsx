@@ -24,7 +24,7 @@ interface Proposta {
   descricao?: string
   observacoes?: string
   checkpoints?: Checkpoint[]
-  // Novos campos
+  // Campos existentes
   produto?: string
   marca?: string
   categoria?: string
@@ -38,6 +38,25 @@ interface Proposta {
   estrategiaRepresentacao?: string
   publicoAlvo?: string
   diferenciaisCompetitivos?: string
+  // Novos campos - Cliente
+  clienteCnpj?: string
+  clienteEndereco?: string
+  clienteNumero?: string
+  clienteBairro?: string
+  clienteCidade?: string
+  clienteCep?: string
+  clienteEstado?: string
+  clienteTelefone?: string
+  clienteEmail?: string
+  clienteNomeFantasia?: string
+  // Novos campos - Produto
+  produtoCodigo?: string
+  aliquotaIpi?: number
+  // Novos campos - Comercial
+  valorFrete?: number
+  tipoPedido?: string
+  transportadora?: string
+  informacoesAdicionais?: string
 }
 
 const Propostas = () => {
