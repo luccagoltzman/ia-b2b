@@ -5,7 +5,7 @@ interface Visita {
   cliente: string
   data: string
   status: string
-  observacoes: string
+  observacoes?: string
 }
 
 interface VisitaListProps {

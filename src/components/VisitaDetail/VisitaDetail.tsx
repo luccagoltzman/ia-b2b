@@ -34,14 +34,6 @@ const VisitaDetail = ({ visita, onClose, onEdit, onUpdateStatus }: VisitaDetailP
   const [novoStatus, setNovoStatus] = useState('')
   const [descricaoStatus, setDescricaoStatus] = useState('')
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    })
-  }
-
   const formatDateTime = (dateString: string, hora?: string) => {
     const date = new Date(dateString)
     const dateFormatted = date.toLocaleDateString('pt-BR', {
