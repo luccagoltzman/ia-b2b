@@ -3,24 +3,25 @@
 .analise-form {
   display: flex;
   flex-direction: column;
-  gap: $spacing-lg;
+  gap: $spacing-xl;
 
   &-group {
     display: flex;
     flex-direction: column;
-    gap: $spacing-md;
+    gap: $spacing-lg;
   }
 
   &-label {
-    font-size: 0.875rem;
-    font-weight: 500;
+    font-size: 0.9375rem;
+    font-weight: 600;
     color: $text-primary;
+    letter-spacing: 0.01em;
   }
 
   &-options {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: $spacing-md;
+    gap: $spacing-lg;
 
     @media (max-width: $breakpoint-md) {
       grid-template-columns: 1fr;
@@ -31,33 +32,66 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: $spacing-sm;
-    padding: $spacing-lg;
-    border: 2px solid $border-color;
-    border-radius: 0.75rem;
-    background-color: $bg-primary;
+    gap: $spacing-md;
+    padding: $spacing-xl;
+    border: 2px solid $border-light;
+    border-radius: $radius-xl;
+    background: $bg-glass;
+    backdrop-filter: blur(10px);
     transition: all $transition-base;
     cursor: pointer;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: $primary-gradient;
+      transform: scaleX(0);
+      transition: transform $transition-base;
+    }
 
     &:hover {
       border-color: $primary-color;
-      background-color: rgba(37, 99, 235, 0.05);
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%);
+      transform: translateY(-4px);
+      box-shadow: $shadow-lg;
+
+      &::before {
+        transform: scaleX(1);
+      }
+
+      .analise-form-option-icon {
+        transform: scale(1.15) rotate(5deg);
+      }
     }
 
     &.active {
       border-color: $primary-color;
-      background-color: rgba(37, 99, 235, 0.1);
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(99, 102, 241, 0.08) 100%);
+      box-shadow: $shadow-md, 0 0 20px rgba(99, 102, 241, 0.2);
+
+      &::before {
+        transform: scaleX(1);
+      }
     }
   }
 
   &-option-icon {
-    font-size: 2rem;
+    font-size: 2.5rem;
+    transition: transform $transition-base;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
   }
 
   &-option-label {
-    font-size: 0.875rem;
-    font-weight: 500;
+    font-size: 0.9375rem;
+    font-weight: 600;
     color: $text-primary;
+    letter-spacing: 0.01em;
   }
 }
 

@@ -1,10 +1,14 @@
 @use '../../styles/variables' as *;
 
 .header {
-  background-color: $bg-primary;
-  border-bottom: 1px solid $border-color;
+  background: $bg-glass;
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid $border-light;
   padding: $spacing-lg $spacing-xl;
   box-shadow: $shadow-sm;
+  position: sticky;
+  top: 0;
+  z-index: 50;
 
   &-content {
     display: flex;
@@ -13,10 +17,11 @@
   }
 
   &-title {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: 600;
     color: $text-primary;
     margin: 0;
+    letter-spacing: -0.01em;
   }
 
   &-actions {
@@ -29,19 +34,38 @@
     display: flex;
     align-items: center;
     gap: $spacing-md;
-    padding: $spacing-sm $spacing-md;
-    border-radius: 0.5rem;
-    background-color: $bg-tertiary;
+    padding: $spacing-md $spacing-lg;
+    border-radius: $radius-xl;
+    background: $bg-primary;
+    border: 1px solid $border-light;
+    box-shadow: $shadow-sm;
+    transition: all $transition-base;
+    cursor: pointer;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: $shadow-md;
+      border-color: $primary-color;
+    }
   }
 
   &-avatar {
-    font-size: 1.25rem;
+    font-size: 1.125rem;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $bg-tertiary;
+    border: 1px solid $border-light;
+    border-radius: $radius-full;
   }
 
   &-name {
-    font-size: 0.875rem;
-    font-weight: 500;
+    font-size: 0.9375rem;
+    font-weight: 600;
     color: $text-primary;
+    letter-spacing: 0.01em;
   }
 }
 

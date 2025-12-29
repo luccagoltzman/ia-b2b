@@ -90,13 +90,7 @@ const PropostaList = ({ propostas, loading, onEdit, onRefresh }: PropostaListPro
                   <td>{proposta.cliente}</td>
                   <td>
                     <span className="proposta-descricao" title={proposta.descricao || ''}>
-                      {proposta.descricao ? 
-                        (proposta.descricao.length > 50 ? 
-                          `${proposta.descricao.substring(0, 50)}...` : 
-                          proposta.descricao
-                        ) : 
-                        '-'
-                      }
+                      {proposta.descricao || '-'}
                     </span>
                   </td>
                   <td>{formatCurrency(proposta.valor)}</td>
@@ -111,6 +105,7 @@ const PropostaList = ({ propostas, loading, onEdit, onRefresh }: PropostaListPro
                     <button
                       className="btn btn-outline"
                       onClick={() => onEdit(proposta)}
+                      style={{ fontSize: '0.75rem', padding: '0.375rem 0.75rem' }}
                     >
                       Editar
                     </button>

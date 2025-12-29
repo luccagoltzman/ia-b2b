@@ -3,7 +3,8 @@
 .layout {
   display: flex;
   min-height: 100vh;
-  background-color: $bg-secondary;
+  background: transparent;
+  position: relative;
 }
 
 .layout-main {
@@ -12,12 +13,31 @@
   flex-direction: column;
   margin-left: 280px;
   transition: margin-left $transition-base;
+  position: relative;
 }
 
 .layout-content {
   flex: 1;
   padding: $spacing-xl;
   overflow-y: auto;
+  position: relative;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $border-color;
+    border-radius: $radius-full;
+    
+    &:hover {
+      background: $text-light;
+    }
+  }
 }
 
 @media (max-width: $breakpoint-lg) {

@@ -2,57 +2,153 @@
 
 .proposta-list {
   overflow-x: auto;
+  border-radius: $radius-lg;
+  width: 100%;
+  max-width: 100%;
+  
+  // Scrollbar customizada
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: $bg-tertiary;
+    border-radius: $radius-full;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $border-color;
+    border-radius: $radius-full;
+    
+    &:hover {
+      background: $text-light;
+    }
+  }
 
   &-loading,
   &-empty {
     text-align: center;
-    padding: $spacing-xl;
+    padding: $spacing-2xl;
     color: $text-secondary;
 
     p {
       margin-bottom: $spacing-md;
+      font-size: 1.125rem;
     }
   }
 }
 
 .proposta-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
 
   thead {
-    background-color: $bg-tertiary;
+    background: $bg-tertiary;
+    position: sticky;
+    top: 0;
+    z-index: 10;
   }
 
   th {
-    padding: $spacing-md;
+    padding: $spacing-sm $spacing-md;
     text-align: left;
-    font-size: 0.875rem;
+    font-size: 0.6875rem;
     font-weight: 600;
-    color: $text-primary;
-    border-bottom: 2px solid $border-color;
+    color: $text-secondary;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid $border-light;
+    
+    &:nth-child(1) { width: 15%; } // Cliente
+    &:nth-child(2) { width: 25%; } // Descrição
+    &:nth-child(3) { width: 12%; } // Valor
+    &:nth-child(4) { width: 10%; } // Status
+    &:nth-child(5) { width: 12%; } // Data Criação
+    &:nth-child(6) { width: 12%; } // Vencimento
+    &:nth-child(7) { width: 14%; } // Ações
   }
 
   td {
-    padding: $spacing-md;
-    font-size: 0.875rem;
+    padding: $spacing-sm $spacing-md;
+    font-size: 0.8125rem;
     color: $text-primary;
-    border-bottom: 1px solid $border-color;
+    border-bottom: 1px solid $border-light;
+    font-weight: 400;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    
+    &:nth-child(1) { // Cliente
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    &:nth-child(2) { // Descrição
+      max-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    &:nth-child(3) { // Valor
+      white-space: nowrap;
+      font-weight: 500;
+    }
+    
+    &:nth-child(4), // Status
+    &:nth-child(5), // Data Criação
+    &:nth-child(6) { // Vencimento
+      white-space: nowrap;
+    }
+    
+    &:nth-child(7) { // Ações
+      white-space: nowrap;
+    }
   }
 
   tbody tr {
-    transition: background-color $transition-base;
+    transition: background-color $transition-fast;
+    background: $bg-primary;
 
     &:hover {
-      background-color: $bg-tertiary;
+      background: $bg-tertiary;
+    }
+
+    &:last-child td {
+      border-bottom: none;
+    }
+  }
+
+  // Responsividade - ocultar colunas menos importantes
+  @media (max-width: $breakpoint-xl) {
+    th:nth-child(5), // Data Criação
+    td:nth-child(5) {
+      display: none;
+    }
+  }
+
+  @media (max-width: $breakpoint-lg) {
+    th:nth-child(6), // Vencimento
+    td:nth-child(6) {
+      display: none;
+    }
+  }
+
+  @media (max-width: $breakpoint-md) {
+    th:nth-child(2), // Descrição
+    td:nth-child(2) {
+      display: none;
     }
   }
 }
 
 .proposta-descricao {
   display: block;
-  max-width: 300px;
   color: $text-secondary;
   font-size: 0.8125rem;
   line-height: 1.4;
+  font-weight: 400;
 }
 

@@ -4,8 +4,9 @@
   &-loading,
   &-empty {
     text-align: center;
-    padding: $spacing-xl;
+    padding: $spacing-2xl;
     color: $text-secondary;
+    font-size: 1.125rem;
   }
 
   &-list {
@@ -17,19 +18,48 @@
   &-item {
     display: flex;
     align-items: center;
-    gap: $spacing-md;
-    padding: $spacing-md;
-    border-radius: 0.5rem;
-    transition: background-color $transition-base;
+    gap: $spacing-lg;
+    padding: $spacing-lg;
+    border-radius: $radius-lg;
+    transition: all $transition-base;
+    background: $bg-primary;
+    border: 1px solid $border-light;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: $primary-gradient;
+      transform: scaleY(0);
+      transition: transform $transition-base;
+    }
 
     &:hover {
-      background-color: $bg-tertiary;
+      background: $bg-tertiary;
+      border-color: $border-color;
+
+      &::before {
+        transform: scaleY(1);
+      }
     }
   }
 
   &-icon {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     flex-shrink: 0;
+    transition: transform $transition-base;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $bg-tertiary;
+    border-radius: $radius-md;
   }
 
   &-content {
@@ -40,11 +70,14 @@
     font-size: 0.875rem;
     color: $text-primary;
     margin-bottom: $spacing-xs;
+    font-weight: 400;
+    line-height: 1.5;
   }
 
   &-time {
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     color: $text-secondary;
+    font-weight: 400;
   }
 }
 

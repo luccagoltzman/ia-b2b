@@ -1,106 +1,183 @@
 @use './variables' as *;
 
-// Botões
+// Botões - Design Premium
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: $spacing-sm $spacing-lg;
+  padding: 0.75rem 1.5rem;
   font-size: 0.875rem;
-  font-weight: 500;
-  border-radius: 0.5rem;
+  font-weight: 600;
+  border-radius: $radius-lg;
   transition: all $transition-base;
   cursor: pointer;
   gap: $spacing-sm;
+  position: relative;
+  overflow: hidden;
+  border: none;
+  letter-spacing: 0.025em;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+  }
+
+  &:active::before {
+    width: 300px;
+    height: 300px;
+  }
 
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    transform: none !important;
   }
 
   &-primary {
-    background-color: $primary-color;
+    background: $primary-color;
     color: white;
+    box-shadow: $shadow-sm;
 
     &:hover:not(:disabled) {
-      background-color: $primary-dark;
+      background: $primary-dark;
+      transform: translateY(-1px);
+      box-shadow: $shadow-md;
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(0);
     }
   }
 
   &-secondary {
-    background-color: $bg-tertiary;
+    background: $bg-primary;
     color: $text-primary;
     border: 1px solid $border-color;
+    box-shadow: $shadow-sm;
 
     &:hover:not(:disabled) {
-      background-color: $bg-secondary;
+      background: $bg-tertiary;
+      border-color: $primary-color;
+      transform: translateY(-1px);
+      box-shadow: $shadow-md;
     }
   }
 
   &-success {
-    background-color: $success;
+    background: $secondary-color;
     color: white;
+    box-shadow: $shadow-sm;
 
     &:hover:not(:disabled) {
-      opacity: 0.9;
+      background: $secondary-dark;
+      transform: translateY(-1px);
+      box-shadow: $shadow-md;
     }
   }
 
   &-outline {
-    background-color: transparent;
-    border: 1px solid $primary-color;
+    background: transparent;
+    border: 2px solid $primary-color;
     color: $primary-color;
+    font-weight: 600;
 
     &:hover:not(:disabled) {
-      background-color: $primary-color;
+      background: $primary-color;
       color: white;
+      transform: translateY(-1px);
+      box-shadow: $shadow-sm;
     }
   }
 }
 
-// Cards
+// Cards - Glassmorphism e profundidade
 .card {
-  background-color: $bg-primary;
-  border-radius: 0.75rem;
-  padding: $spacing-lg;
-  box-shadow: $shadow-md;
-  border: 1px solid $border-color;
+  background: $bg-glass;
+  backdrop-filter: blur(10px);
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+  box-shadow: $shadow-lg;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  transition: all $transition-base;
+  position: relative;
+  overflow: visible;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: $primary-gradient;
+    opacity: 0;
+    transition: opacity $transition-base;
+  }
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: $shadow-xl;
+    border-color: rgba(99, 102, 241, 0.3);
+
+    &::before {
+      opacity: 1;
+    }
+  }
 
   &-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: $spacing-lg;
-    padding-bottom: $spacing-md;
-    border-bottom: 1px solid $border-color;
+    margin-bottom: $spacing-xl;
+    padding-bottom: $spacing-lg;
+    border-bottom: 1px solid $border-light;
   }
 
   &-title {
-    font-size: 1.25rem;
+    font-size: 1.125rem;
     font-weight: 600;
     color: $text-primary;
+    letter-spacing: -0.01em;
   }
 }
 
-// Inputs
+// Inputs - Design Premium
 .input {
   width: 100%;
-  padding: $spacing-sm $spacing-md;
-  font-size: 0.875rem;
-  border: 1px solid $border-color;
-  border-radius: 0.5rem;
-  background-color: $bg-primary;
+  padding: 0.875rem 1.25rem;
+  font-size: 0.9375rem;
+  border: 2px solid $border-color;
+  border-radius: $radius-lg;
+  background: $bg-primary;
   color: $text-primary;
   transition: all $transition-base;
+  font-weight: 500;
 
   &:focus {
     outline: none;
     border-color: $primary-color;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1), $shadow-md;
+    transform: translateY(-1px);
   }
 
   &::placeholder {
     color: $text-light;
+    font-weight: 400;
+  }
+
+  &:hover:not(:focus) {
+    border-color: $primary-light;
   }
 }
 
@@ -108,35 +185,45 @@
   @extend .input;
   resize: vertical;
   min-height: 120px;
+  line-height: 1.6;
+  font-family: inherit;
 }
 
-// Badges
+// Badges - Design Premium
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: $spacing-xs $spacing-sm;
-  font-size: 0.75rem;
-  font-weight: 500;
-  border-radius: 0.375rem;
+  padding: 0.5rem 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border-radius: $radius-full;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+  font-size: 0.6875rem;
+  box-shadow: $shadow-sm;
 
   &-success {
-    background-color: rgba(16, 185, 129, 0.1);
+    background: linear-gradient(135deg, $success-light 0%, rgba(16, 185, 129, 0.2) 100%);
     color: $success;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
   }
 
   &-warning {
-    background-color: rgba(245, 158, 11, 0.1);
+    background: linear-gradient(135deg, $warning-light 0%, rgba(245, 158, 11, 0.2) 100%);
     color: $warning;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
   }
 
   &-error {
-    background-color: rgba(239, 68, 68, 0.1);
+    background: linear-gradient(135deg, $error-light 0%, rgba(239, 68, 68, 0.2) 100%);
     color: $error;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
   }
 
   &-info {
-    background-color: rgba(59, 130, 246, 0.1);
+    background: linear-gradient(135deg, $info-light 0%, rgba(59, 130, 246, 0.2) 100%);
     color: $info;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
   }
 }
 
