@@ -8,6 +8,8 @@ interface Proposta {
   status: string
   dataCriacao: string
   dataVencimento: string
+  descricao?: string
+  observacoes?: string
 }
 
 interface PropostaFormProps {
@@ -31,8 +33,17 @@ const PropostaForm = ({ proposta, onSubmit, onCancel }: PropostaFormProps) => {
       setFormData({
         cliente: proposta.cliente,
         valor: proposta.valor.toString(),
+        descricao: proposta.descricao || '',
+        dataVencimento: proposta.dataVencimento.split('T')[0], // Formata para input date
+        observacoes: proposta.observacoes || ''
+      })
+    } else {
+      // Limpa o formulário quando não há proposta (criar nova)
+      setFormData({
+        cliente: '',
+        valor: '',
         descricao: '',
-        dataVencimento: proposta.dataVencimento,
+        dataVencimento: '',
         observacoes: ''
       })
     }

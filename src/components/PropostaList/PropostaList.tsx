@@ -7,6 +7,8 @@ interface Proposta {
   status: string
   dataCriacao: string
   dataVencimento: string
+  descricao?: string
+  observacoes?: string
 }
 
 interface PropostaListProps {
@@ -72,6 +74,7 @@ const PropostaList = ({ propostas, loading, onEdit, onRefresh }: PropostaListPro
           <thead>
             <tr>
               <th>Cliente</th>
+              <th>Descrição</th>
               <th>Valor</th>
               <th>Status</th>
               <th>Data Criação</th>
@@ -85,6 +88,17 @@ const PropostaList = ({ propostas, loading, onEdit, onRefresh }: PropostaListPro
               return (
                 <tr key={proposta.id}>
                   <td>{proposta.cliente}</td>
+                  <td>
+                    <span className="proposta-descricao" title={proposta.descricao || ''}>
+                      {proposta.descricao ? 
+                        (proposta.descricao.length > 50 ? 
+                          `${proposta.descricao.substring(0, 50)}...` : 
+                          proposta.descricao
+                        ) : 
+                        '-'
+                      }
+                    </span>
+                  </td>
                   <td>{formatCurrency(proposta.valor)}</td>
                   <td>
                     <span className={`badge badge-${status.class}`}>

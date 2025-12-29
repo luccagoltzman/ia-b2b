@@ -11,6 +11,8 @@ interface Proposta {
   status: string
   dataCriacao: string
   dataVencimento: string
+  descricao?: string
+  observacoes?: string
 }
 
 const Propostas = () => {
