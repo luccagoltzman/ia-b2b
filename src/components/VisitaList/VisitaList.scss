@@ -1,0 +1,63 @@
+@import '../../styles/variables';
+
+.visita-list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+
+  &-loading,
+  &-empty {
+    text-align: center;
+    padding: $spacing-xl;
+    color: $text-secondary;
+
+    p {
+      margin-bottom: $spacing-md;
+    }
+  }
+}
+
+.visita-item {
+  padding: $spacing-lg;
+  border: 1px solid $border-color;
+  border-radius: 0.75rem;
+  background-color: $bg-secondary;
+  transition: all $transition-base;
+
+  &:hover {
+    border-color: $primary-color;
+    box-shadow: $shadow-md;
+  }
+
+  &-main {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+  }
+
+  &-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  &-cliente {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: $text-primary;
+    margin: 0;
+  }
+
+  &-date {
+    font-size: 0.875rem;
+    color: $text-secondary;
+  }
+
+  &-observacoes {
+    font-size: 0.875rem;
+    color: $text-secondary;
+    margin-top: $spacing-sm;
+    line-height: 1.6;
+  }
+}
+

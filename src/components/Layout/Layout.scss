@@ -1,0 +1,28 @@
+@import '../../styles/variables';
+
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: $bg-secondary;
+}
+
+.layout-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-left: 280px;
+  transition: margin-left $transition-base;
+}
+
+.layout-content {
+  flex: 1;
+  padding: $spacing-xl;
+  overflow-y: auto;
+}
+
+@media (max-width: $breakpoint-lg) {
+  .layout-main {
+    margin-left: 0;
+  }
+}
+

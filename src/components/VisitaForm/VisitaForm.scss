@@ -1,0 +1,41 @@
+@import '../../styles/variables';
+
+.visita-form {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-lg;
+
+  &-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: $spacing-lg;
+
+    @media (max-width: $breakpoint-md) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &-group {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+  }
+
+  &-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: $text-primary;
+  }
+
+  &-actions {
+    display: flex;
+    gap: $spacing-md;
+    justify-content: flex-end;
+    margin-top: $spacing-md;
+
+    @media (max-width: $breakpoint-md) {
+      flex-direction: column;
+    }
+  }
+}
+

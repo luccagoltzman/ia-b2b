@@ -1,0 +1,70 @@
+@import '../../styles/variables';
+
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $spacing-md;
+}
+
+.quick-action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-sm;
+  padding: $spacing-lg;
+  border-radius: 0.75rem;
+  transition: all $transition-base;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 2px solid transparent;
+
+  &-primary {
+    background-color: rgba(37, 99, 235, 0.1);
+    color: $primary-color;
+
+    &:hover {
+      background-color: rgba(37, 99, 235, 0.2);
+      border-color: $primary-color;
+    }
+  }
+
+  &-secondary {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: $secondary-color;
+
+    &:hover {
+      background-color: rgba(16, 185, 129, 0.2);
+      border-color: $secondary-color;
+    }
+  }
+
+  &-success {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: $warning;
+
+    &:hover {
+      background-color: rgba(245, 158, 11, 0.2);
+      border-color: $warning;
+    }
+  }
+
+  &-info {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: $info;
+
+    &:hover {
+      background-color: rgba(59, 130, 246, 0.2);
+      border-color: $info;
+    }
+  }
+}
+
+.quick-action-icon {
+  font-size: 2rem;
+}
+
+.quick-action-label {
+  font-size: 0.875rem;
+}
+

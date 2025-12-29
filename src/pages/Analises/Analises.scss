@@ -1,0 +1,23 @@
+@import '../../styles/variables';
+
+.analises {
+  &-header {
+    margin-bottom: $spacing-xl;
+
+    h2 {
+      margin-bottom: $spacing-xs;
+    }
+  }
+
+  &-content {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xl;
+  }
+
+  &-form-section,
+  &-result-section {
+    width: 100%;
+  }
+}
+

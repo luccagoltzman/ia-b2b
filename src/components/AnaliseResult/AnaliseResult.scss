@@ -1,0 +1,34 @@
+@import '../../styles/variables';
+
+.analise-result {
+  &-content {
+    background-color: $bg-secondary;
+    border-radius: 0.5rem;
+    padding: $spacing-lg;
+    margin-bottom: $spacing-lg;
+    max-height: 600px;
+    overflow-y: auto;
+  }
+
+  &-paragraph {
+    font-size: 0.9375rem;
+    line-height: 1.8;
+    color: $text-primary;
+    margin-bottom: $spacing-md;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  &-actions {
+    display: flex;
+    gap: $spacing-md;
+    justify-content: flex-end;
+
+    @media (max-width: $breakpoint-md) {
+      flex-direction: column;
+    }
+  }
+}
+

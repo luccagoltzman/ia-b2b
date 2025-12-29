@@ -1,0 +1,29 @@
+@import '../../styles/variables';
+
+.dashboard {
+  &-header {
+    margin-bottom: $spacing-xl;
+
+    h2 {
+      margin-bottom: $spacing-xs;
+    }
+  }
+
+  &-stats {
+    margin-bottom: $spacing-xl;
+  }
+
+  &-content {
+    margin-top: $spacing-xl;
+  }
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  font-size: 1.125rem;
+  color: $text-secondary;
+}
+

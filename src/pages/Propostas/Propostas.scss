@@ -1,0 +1,25 @@
+@import '../../styles/variables';
+
+.propostas {
+  &-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: $spacing-xl;
+
+    h2 {
+      margin-bottom: $spacing-xs;
+    }
+
+    @media (max-width: $breakpoint-md) {
+      flex-direction: column;
+      gap: $spacing-md;
+    }
+  }
+
+  &-form-section,
+  &-list-section {
+    width: 100%;
+  }
+}
+

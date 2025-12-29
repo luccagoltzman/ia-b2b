@@ -1,0 +1,47 @@
+@import '../../styles/variables';
+
+.header {
+  background-color: $bg-primary;
+  border-bottom: 1px solid $border-color;
+  padding: $spacing-lg $spacing-xl;
+  box-shadow: $shadow-sm;
+
+  &-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  &-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: $text-primary;
+    margin: 0;
+  }
+
+  &-actions {
+    display: flex;
+    align-items: center;
+    gap: $spacing-lg;
+  }
+
+  &-user {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    padding: $spacing-sm $spacing-md;
+    border-radius: 0.5rem;
+    background-color: $bg-tertiary;
+  }
+
+  &-avatar {
+    font-size: 1.25rem;
+  }
+
+  &-name {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: $text-primary;
+  }
+}
+

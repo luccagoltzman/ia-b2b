@@ -1,0 +1,52 @@
+@import '../../styles/variables';
+
+.configuracoes {
+  &-header {
+    margin-bottom: $spacing-xl;
+
+    h2 {
+      margin-bottom: $spacing-xs;
+    }
+  }
+
+  &-content {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xl;
+  }
+
+  &-form {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-lg;
+  }
+
+  &-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+  }
+
+  &-form-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: $text-primary;
+  }
+
+  &-form-help {
+    font-size: 0.75rem;
+    color: $text-secondary;
+    margin-top: $spacing-xs;
+  }
+
+  &-info {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+
+    p {
+      margin: 0;
+    }
+  }
+}
+

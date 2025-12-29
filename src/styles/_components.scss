@@ -1,0 +1,193 @@
+@import './variables';
+
+// Botões
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-sm $spacing-lg;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.5rem;
+  transition: all $transition-base;
+  cursor: pointer;
+  gap: $spacing-sm;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &-primary {
+    background-color: $primary-color;
+    color: white;
+
+    &:hover:not(:disabled) {
+      background-color: $primary-dark;
+    }
+  }
+
+  &-secondary {
+    background-color: $bg-tertiary;
+    color: $text-primary;
+    border: 1px solid $border-color;
+
+    &:hover:not(:disabled) {
+      background-color: $bg-secondary;
+    }
+  }
+
+  &-success {
+    background-color: $success;
+    color: white;
+
+    &:hover:not(:disabled) {
+      opacity: 0.9;
+    }
+  }
+
+  &-outline {
+    background-color: transparent;
+    border: 1px solid $primary-color;
+    color: $primary-color;
+
+    &:hover:not(:disabled) {
+      background-color: $primary-color;
+      color: white;
+    }
+  }
+}
+
+// Cards
+.card {
+  background-color: $bg-primary;
+  border-radius: 0.75rem;
+  padding: $spacing-lg;
+  box-shadow: $shadow-md;
+  border: 1px solid $border-color;
+
+  &-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $spacing-lg;
+    padding-bottom: $spacing-md;
+    border-bottom: 1px solid $border-color;
+  }
+
+  &-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: $text-primary;
+  }
+}
+
+// Inputs
+.input {
+  width: 100%;
+  padding: $spacing-sm $spacing-md;
+  font-size: 0.875rem;
+  border: 1px solid $border-color;
+  border-radius: 0.5rem;
+  background-color: $bg-primary;
+  color: $text-primary;
+  transition: all $transition-base;
+
+  &:focus {
+    outline: none;
+    border-color: $primary-color;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
+
+  &::placeholder {
+    color: $text-light;
+  }
+}
+
+.textarea {
+  @extend .input;
+  resize: vertical;
+  min-height: 120px;
+}
+
+// Badges
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: $spacing-xs $spacing-sm;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 0.375rem;
+
+  &-success {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: $success;
+  }
+
+  &-warning {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: $warning;
+  }
+
+  &-error {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: $error;
+  }
+
+  &-info {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: $info;
+  }
+}
+
+// Loading
+.loading {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(37, 99, 235, 0.3);
+  border-radius: 50%;
+  border-top-color: $primary-color;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+// Grid
+.grid {
+  display: grid;
+  gap: $spacing-lg;
+
+  &-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  &-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  &-4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: $breakpoint-lg) {
+  .grid-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: $breakpoint-md) {
+  .grid-2,
+  .grid-3,
+  .grid-4 {
+    grid-template-columns: 1fr;
+  }
+}
+

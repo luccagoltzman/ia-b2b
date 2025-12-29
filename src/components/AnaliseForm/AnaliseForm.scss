@@ -1,0 +1,63 @@
+@import '../../styles/variables';
+
+.analise-form {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-lg;
+
+  &-group {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+  }
+
+  &-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: $text-primary;
+  }
+
+  &-options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: $spacing-md;
+
+    @media (max-width: $breakpoint-md) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $spacing-sm;
+    padding: $spacing-lg;
+    border: 2px solid $border-color;
+    border-radius: 0.75rem;
+    background-color: $bg-primary;
+    transition: all $transition-base;
+    cursor: pointer;
+
+    &:hover {
+      border-color: $primary-color;
+      background-color: rgba(37, 99, 235, 0.05);
+    }
+
+    &.active {
+      border-color: $primary-color;
+      background-color: rgba(37, 99, 235, 0.1);
+    }
+  }
+
+  &-option-icon {
+    font-size: 2rem;
+  }
+
+  &-option-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: $text-primary;
+  }
+}
+

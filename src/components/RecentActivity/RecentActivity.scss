@@ -1,0 +1,50 @@
+@import '../../styles/variables';
+
+.recent-activity {
+  &-loading,
+  &-empty {
+    text-align: center;
+    padding: $spacing-xl;
+    color: $text-secondary;
+  }
+
+  &-list {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+  }
+
+  &-item {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    padding: $spacing-md;
+    border-radius: 0.5rem;
+    transition: background-color $transition-base;
+
+    &:hover {
+      background-color: $bg-tertiary;
+    }
+  }
+
+  &-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  &-content {
+    flex: 1;
+  }
+
+  &-description {
+    font-size: 0.875rem;
+    color: $text-primary;
+    margin-bottom: $spacing-xs;
+  }
+
+  &-time {
+    font-size: 0.75rem;
+    color: $text-secondary;
+  }
+}
+

@@ -1,0 +1,50 @@
+@import '../../styles/variables';
+
+.proposta-list {
+  overflow-x: auto;
+
+  &-loading,
+  &-empty {
+    text-align: center;
+    padding: $spacing-xl;
+    color: $text-secondary;
+
+    p {
+      margin-bottom: $spacing-md;
+    }
+  }
+}
+
+.proposta-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead {
+    background-color: $bg-tertiary;
+  }
+
+  th {
+    padding: $spacing-md;
+    text-align: left;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: $text-primary;
+    border-bottom: 2px solid $border-color;
+  }
+
+  td {
+    padding: $spacing-md;
+    font-size: 0.875rem;
+    color: $text-primary;
+    border-bottom: 1px solid $border-color;
+  }
+
+  tbody tr {
+    transition: background-color $transition-base;
+
+    &:hover {
+      background-color: $bg-tertiary;
+    }
+  }
+}
+

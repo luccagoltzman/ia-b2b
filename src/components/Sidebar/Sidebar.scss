@@ -1,0 +1,76 @@
+@import '../../styles/variables';
+
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 280px;
+  height: 100vh;
+  background-color: $bg-primary;
+  border-right: 1px solid $border-color;
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  box-shadow: $shadow-sm;
+
+  &-header {
+    padding: $spacing-xl;
+    border-bottom: 1px solid $border-color;
+  }
+
+  &-logo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: $primary-color;
+    margin-bottom: $spacing-xs;
+  }
+
+  &-subtitle {
+    font-size: 0.75rem;
+    color: $text-secondary;
+  }
+
+  &-nav {
+    flex: 1;
+    padding: $spacing-md;
+    overflow-y: auto;
+  }
+
+  &-item {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    padding: $spacing-md;
+    border-radius: 0.5rem;
+    color: $text-secondary;
+    transition: all $transition-base;
+    margin-bottom: $spacing-xs;
+
+    &:hover {
+      background-color: $bg-tertiary;
+      color: $text-primary;
+    }
+
+    &.active {
+      background-color: rgba(37, 99, 235, 0.1);
+      color: $primary-color;
+      font-weight: 500;
+    }
+  }
+
+  &-icon {
+    font-size: 1.25rem;
+  }
+
+  &-label {
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: $breakpoint-lg) {
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform $transition-base;
+  }
+}
+
