@@ -12,9 +12,11 @@ interface VisitaListProps {
   visitas: Visita[]
   loading: boolean
   onRefresh: () => void
+  onEdit?: (visita: Visita) => void
+  onView?: (visita: Visita) => void
 }
 
-const VisitaList = ({ visitas, loading, onRefresh }: VisitaListProps) => {
+const VisitaList = ({ visitas, loading, onRefresh, onEdit, onView }: VisitaListProps) => {
   const getStatusBadge = (status: string) => {
     const statusMap: Record<string, { label: string; class: string }> = {
       agendada: { label: 'Agendada', class: 'info' },
@@ -81,6 +83,24 @@ const VisitaList = ({ visitas, loading, onRefresh }: VisitaListProps) => {
                 </div>
                 {visita.observacoes && (
                   <p className="visita-item-observacoes">{visita.observacoes}</p>
+                )}
+              </div>
+              <div className="visita-item-actions">
+                {onView && (
+                  <button
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => onView(visita)}
+                  >
+                    Ver Detalhes
+                  </button>
+                )}
+                {onEdit && (
+                  <button
+                    className="btn btn-primary btn-sm"
+                    onClick={() => onEdit(visita)}
+                  >
+                    Editar
+                  </button>
                 )}
               </div>
             </div>

@@ -1,12 +1,23 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './VisitaForm.scss'
 
+interface Visita {
+  id: string
+  cliente: string
+  data: string
+  hora?: string
+  status: string
+  endereco?: string
+  observacoes?: string
+}
+
 interface VisitaFormProps {
+  visita?: Visita | null
   onSubmit: (dados: any) => void
   onCancel: () => void
 }
 
-const VisitaForm = ({ onSubmit, onCancel }: VisitaFormProps) => {
+const VisitaForm = ({ visita, onSubmit, onCancel }: VisitaFormProps) => {
   const [formData, setFormData] = useState({
     cliente: '',
     data: '',
@@ -15,6 +26,18 @@ const VisitaForm = ({ onSubmit, onCancel }: VisitaFormProps) => {
     observacoes: ''
   })
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (visita) {
+      setFormData({
+        cliente: visita.cliente,
+        data: visita.data.split('T')[0], // Formatar para input type="date"
+        hora: visita.hora || '',
+        endereco: visita.endereco || '',
+        observacoes: visita.observacoes || ''
+      })
+    }
+  }, [visita])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -30,7 +53,7 @@ const VisitaForm = ({ onSubmit, onCancel }: VisitaFormProps) => {
   return (
     <div className="card">
       <div className="card-header">
-        <h3 className="card-title">Agendar Nova Visita</h3>
+        <h3 className="card-title">{visita ? 'Editar Visita' : 'Agendar Nova Visita'}</h3>
       </div>
       <form className="visita-form" onSubmit={handleSubmit}>
         <div className="visita-form-row">
@@ -105,7 +128,7 @@ const VisitaForm = ({ onSubmit, onCancel }: VisitaFormProps) => {
             className="btn btn-primary"
             disabled={loading}
           >
-            {loading ? 'Agendando...' : 'Agendar Visita'}
+            {loading ? (visita ? 'Salvando...' : 'Agendando...') : (visita ? 'Salvar Alterações' : 'Agendar Visita')}
           </button>
         </div>
       </form>

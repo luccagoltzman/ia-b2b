@@ -88,6 +88,11 @@ export const apiService = {
     return response.data
   },
 
+  async getVisitaDetalhes(id: string) {
+    const response = await api.get(`/visitas/${id}`)
+    return response.data
+  },
+
   async createVisita(dados: any) {
     const response = await api.post('/visitas', dados)
     return response.data
@@ -96,6 +101,22 @@ export const apiService = {
   async updateVisita(id: string, dados: any) {
     const response = await api.put(`/visitas/${id}`, dados)
     return response.data
+  },
+
+  async updateVisitaStatus(id: string, status: string, descricao?: string) {
+    try {
+      const response = await api.post(`/visitas/${id}/status`, {
+        status,
+        descricao: descricao || null
+      })
+      return response.data
+    } catch (error: any) {
+      if (error.response) {
+        const message = error.response.data?.message || error.response.data?.error || 'Erro ao atualizar status'
+        throw new Error(message)
+      }
+      throw error
+    }
   },
 
   async deleteVisita(id: string) {
