@@ -18,6 +18,8 @@ const VisitaList = ({ visitas, loading, onRefresh }: VisitaListProps) => {
   const getStatusBadge = (status: string) => {
     const statusMap: Record<string, { label: string; class: string }> = {
       agendada: { label: 'Agendada', class: 'info' },
+      confirmada: { label: 'Confirmada', class: 'info' },
+      em_andamento: { label: 'Em Andamento', class: 'warning' },
       realizada: { label: 'Realizada', class: 'success' },
       cancelada: { label: 'Cancelada', class: 'error' },
       reagendada: { label: 'Reagendada', class: 'warning' }

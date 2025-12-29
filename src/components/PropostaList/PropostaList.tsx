@@ -15,16 +15,21 @@ interface PropostaListProps {
   propostas: Proposta[]
   loading: boolean
   onEdit: (proposta: Proposta) => void
+  onView?: (proposta: Proposta) => void
   onRefresh: () => void
 }
 
-const PropostaList = ({ propostas, loading, onEdit, onRefresh }: PropostaListProps) => {
+const PropostaList = ({ propostas, loading, onEdit, onView, onRefresh }: PropostaListProps) => {
   const getStatusBadge = (status: string) => {
     const statusMap: Record<string, { label: string; class: string }> = {
+      rascunho: { label: 'Rascunho', class: 'info' },
       pendente: { label: 'Pendente', class: 'warning' },
+      enviada: { label: 'Enviada', class: 'info' },
+      em_analise_gerente_compras: { label: 'Em Análise - Gerente', class: 'info' },
+      em_analise_diretoria: { label: 'Em Análise - Diretoria', class: 'info' },
       aprovada: { label: 'Aprovada', class: 'success' },
       rejeitada: { label: 'Rejeitada', class: 'error' },
-      enviada: { label: 'Enviada', class: 'info' }
+      cancelada: { label: 'Cancelada', class: 'info' }
     }
     return statusMap[status] || { label: status, class: 'info' }
   }
@@ -104,13 +109,24 @@ const PropostaList = ({ propostas, loading, onEdit, onRefresh }: PropostaListPro
                   <td>{formatDate(proposta.dataCriacao)}</td>
                   <td>{formatDate(proposta.dataVencimento)}</td>
                   <td>
-                    <button
-                      className="btn btn-outline"
-                      onClick={() => onEdit(proposta)}
-                      style={{ fontSize: '0.75rem', padding: '0.375rem 0.75rem' }}
-                    >
-                      Editar
-                    </button>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      {onView && (
+                        <button
+                          className="btn btn-secondary"
+                          onClick={() => onView(proposta)}
+                          style={{ fontSize: '0.75rem', padding: '0.375rem 0.75rem' }}
+                        >
+                          Ver
+                        </button>
+                      )}
+                      <button
+                        className="btn btn-outline"
+                        onClick={() => onEdit(proposta)}
+                        style={{ fontSize: '0.75rem', padding: '0.375rem 0.75rem' }}
+                      >
+                        Editar
+                      </button>
+                    </div>
                   </td>
                 </tr>
               )
@@ -154,6 +170,14 @@ const PropostaList = ({ propostas, loading, onEdit, onRefresh }: PropostaListPro
               </div>
               
               <div className="proposta-card-actions">
+                {onView && (
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => onView(proposta)}
+                  >
+                    Ver Detalhes
+                  </button>
+                )}
                 <button
                   className="btn btn-primary"
                   onClick={() => onEdit(proposta)}

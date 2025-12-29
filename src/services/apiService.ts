@@ -45,6 +45,11 @@ export const apiService = {
     return response.data
   },
 
+  async getPropostaDetalhes(id: string) {
+    const response = await api.get(`/propostas/${id}`)
+    return response.data
+  },
+
   async createProposta(dados: any) {
     const response = await api.post('/propostas', dados)
     return response.data
@@ -53,6 +58,23 @@ export const apiService = {
   async updateProposta(id: string, dados: any) {
     const response = await api.put(`/propostas/${id}`, dados)
     return response.data
+  },
+
+  async updatePropostaStatus(id: string, status: string, descricao?: string) {
+    try {
+      const response = await api.post(`/propostas/${id}/status`, {
+        status,
+        descricao: descricao || null
+      })
+      return response.data
+    } catch (error: any) {
+      // Se o endpoint não existir (404) ou houver erro 400, lançar erro mais descritivo
+      if (error.response) {
+        const message = error.response.data?.message || error.response.data?.error || 'Erro ao atualizar status'
+        throw new Error(message)
+      }
+      throw error
+    }
   },
 
   async deleteProposta(id: string) {

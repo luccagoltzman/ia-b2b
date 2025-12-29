@@ -1,0 +1,94 @@
+@use '../../styles/variables' as *;
+
+.proposta-timeline {
+  margin-top: $spacing-lg;
+
+  &-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: $text-primary;
+    margin-bottom: $spacing-lg;
+  }
+
+  &-list {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+  }
+
+  &-item {
+    display: flex;
+    gap: $spacing-md;
+    position: relative;
+
+    &.atual {
+      .proposta-timeline-marker {
+        .proposta-timeline-icon {
+          transform: scale(1.2);
+          box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+      }
+    }
+  }
+
+  &-marker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  &-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $bg-tertiary;
+    border: 2px solid $border-light;
+    border-radius: $radius-full;
+    font-size: 1.25rem;
+    transition: all $transition-base;
+  }
+
+  &-line {
+    width: 2px;
+    height: calc(100% + $spacing-md);
+    background: $border-light;
+    margin-top: $spacing-xs;
+  }
+
+  &-content {
+    flex: 1;
+    padding-bottom: $spacing-md;
+  }
+
+  &-header {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    margin-bottom: $spacing-xs;
+    flex-wrap: wrap;
+  }
+
+  &-date {
+    font-size: 0.75rem;
+    color: $text-secondary;
+    font-weight: 400;
+  }
+
+  &-descricao {
+    font-size: 0.875rem;
+    color: $text-secondary;
+    line-height: 1.5;
+    margin: $spacing-xs 0;
+  }
+
+  &-usuario {
+    font-size: 0.75rem;
+    color: $text-light;
+    font-style: italic;
+  }
+}
+

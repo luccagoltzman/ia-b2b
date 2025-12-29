@@ -1,269 +1,351 @@
-# IA B2B - Frontend
+# 🚀 IA B2B - Sistema Inteligente para Representantes Comerciais
 
-Sistema inteligente para representantes comerciais B2B que negociam com grandes redes de supermercados.
+<div align="center">
 
-## 🚀 Tecnologias
+**Plataforma completa de gestão comercial B2B com inteligência artificial integrada**
 
-- **React 18** com TypeScript
-- **Vite** como build tool
-- **SCSS** para estilização
-- **React Router** para navegação
-- **Axios** para requisições HTTP
+[![React](https://img.shields.io/badge/React-18.2.0-61DAFB?logo=react)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.2.2-3178C6?logo=typescript)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-5.0.8-646CFF?logo=vite)](https://vitejs.dev/)
+[![SCSS](https://img.shields.io/badge/SCSS-1.69.5-CC6699?logo=sass)](https://sass-lang.com/)
+
+</div>
+
+---
+
+## 📋 Sobre o Projeto
+
+**IA B2B** é uma plataforma moderna e inteligente desenvolvida especificamente para representantes comerciais que negociam com grandes redes de supermercados. O sistema combina **inteligência artificial** com **análise de dados** para otimizar processos comerciais, aumentar a taxa de conversão e reduzir o esforço operacional.
+
+### 🎯 Objetivos Principais
+
+- ✅ **Decisão Orientada a Dados**: Análises inteligentes geradas por IA para insights acionáveis
+- ✅ **Redução de Esforço Operacional**: Automação de processos repetitivos e gestão centralizada
+- ✅ **Aumento da Taxa de Conversão**: Acompanhamento detalhado de propostas e visitas com checkpoints
+- ✅ **Experiência Moderna**: Interface clean, responsiva e otimizada para mobile
+
+---
+
+## ✨ Funcionalidades
+
+### 📊 Dashboard Inteligente
+- Visão geral com métricas de performance em tempo real
+- Estatísticas de visitas, conversões e receita
+- Atividades recentes com timeline visual
+- Ações rápidas para operações frequentes
+
+### 🤖 Análises com IA
+- **Análise de Performance**: Avaliação de dados de vendas e conversões
+- **Análise de Concorrência**: Comparação com mercado e concorrentes
+- **Análise de Tendências**: Identificação de padrões e projeções futuras
+- **Identificação de Oportunidades**: Sugestões estratégicas baseadas em dados
+
+### 📝 Gestão de Propostas
+- CRUD completo de propostas comerciais
+- Sistema de **checkpoints/timeline** para rastreamento de status
+- Status granulares: rascunho, pendente, enviada, em análise (gerente/diretoria), aprovada, rejeitada, cancelada
+- Visualização detalhada com histórico completo de mudanças
+- Cards responsivos para mobile, tabela otimizada para desktop
+
+### 📍 Gestão de Visitas
+- Agendamento e acompanhamento de visitas comerciais
+- Status detalhados: agendada, confirmada, em andamento, realizada, cancelada, reagendada
+- Timeline de checkpoints para rastreamento completo
+- Interface adaptada para dispositivos móveis
+
+### 🎨 Design System
+- Interface moderna com glassmorphism e gradientes sutis
+- Design responsivo com menu bottom para mobile
+- Animações suaves e microinterações
+- Paleta de cores profissional e tipografia otimizada
+
+---
+
+## 🛠️ Stack Tecnológica
+
+### Core
+- **React 18.2.0** - Biblioteca UI moderna e performática
+- **TypeScript 5.2.2** - Tipagem estática para maior segurança
+- **Vite 5.0.8** - Build tool ultra-rápido
+- **React Router 6.20.0** - Roteamento declarativo
+
+### Estilização
+- **SCSS 1.69.5** - Pré-processador CSS com variáveis e mixins
+- **Design System** - Variáveis centralizadas, componentes reutilizáveis
+- **Responsive Design** - Mobile-first com breakpoints bem definidos
+
+### Comunicação
+- **Axios 1.6.2** - Cliente HTTP com interceptors configurados
+- **API RESTful** - Integração com backend separado
+
+---
 
 ## 📦 Instalação
 
-```bash
-npm install
+### Pré-requisitos
+- Node.js 18+ 
+- npm ou yarn
+
+### Passos
+
+1. **Clone o repositório**
+   ```bash
+   git clone <repository-url>
+   cd ia-b2b
+   ```
+
+2. **Instale as dependências**
+   ```bash
+   npm install
+   ```
+
+3. **Configure as variáveis de ambiente** (opcional)
+   ```bash
+   # Crie um arquivo .env na raiz do projeto
+   VITE_API_URL=http://localhost:5000/api
+   ```
+
+4. **Execute o projeto**
+   ```bash
+   npm run dev
+   ```
+
+5. **Acesse no navegador**
+   ```
+   http://localhost:3000
+   ```
+
+---
+
+## 🏗️ Arquitetura do Projeto
+
+```
+ia-b2b/
+├── src/
+│   ├── components/              # Componentes reutilizáveis
+│   │   ├── Layout/             # Layout principal (Sidebar + Header)
+│   │   ├── BottomNav/          # Menu bottom para mobile
+│   │   ├── Header/             # Cabeçalho da aplicação
+│   │   ├── Sidebar/            # Menu lateral (desktop)
+│   │   ├── StatCard/           # Cards de estatísticas
+│   │   ├── RecentActivity/      # Timeline de atividades
+│   │   ├── QuickActions/       # Botões de ação rápida
+│   │   ├── AnaliseForm/        # Formulário de análise
+│   │   ├── AnaliseResult/      # Exibição de resultados
+│   │   ├── PropostaForm/       # Formulário de proposta
+│   │   ├── PropostaList/       # Lista de propostas (tabela/cards)
+│   │   ├── PropostaDetail/     # Modal de detalhes
+│   │   ├── PropostaTimeline/   # Timeline de checkpoints
+│   │   ├── VisitaForm/         # Formulário de visita
+│   │   └── VisitaList/         # Lista de visitas
+│   ├── pages/                   # Páginas da aplicação
+│   │   ├── Dashboard/           # Dashboard principal
+│   │   ├── Analises/            # Página de análises
+│   │   ├── Propostas/           # Página de propostas
+│   │   ├── Visitas/             # Página de visitas
+│   │   └── Configuracoes/       # Configurações
+│   ├── services/                # Serviços de API
+│   │   └── apiService.ts        # Cliente HTTP centralizado
+│   ├── styles/                  # Estilos globais
+│   │   ├── _variables.scss      # Variáveis SCSS (cores, espaçamentos, etc)
+│   │   ├── _reset.scss          # Reset CSS
+│   │   ├── _base.scss           # Estilos base e utilitários
+│   │   ├── _components.scss     # Estilos de componentes globais
+│   │   └── main.scss            # Arquivo principal
+│   ├── App.tsx                  # Componente raiz
+│   └── main.tsx                 # Entry point
+├── public/                      # Arquivos estáticos
+├── index.html                   # HTML principal
+├── vite.config.ts              # Configuração do Vite
+├── tsconfig.json               # Configuração TypeScript
+└── package.json                # Dependências e scripts
 ```
 
-## 🏃 Executar
+### Princípios de Organização
 
-```bash
-npm run dev
-```
+- **Separação de Responsabilidades**: Cada componente tem seu próprio arquivo `.tsx` e `.scss`
+- **Reutilização**: Componentes modulares e configuráveis
+- **Type Safety**: Interfaces TypeScript para todos os dados
+- **Design System**: Variáveis centralizadas para consistência visual
 
-O projeto estará disponível em `http://localhost:3000`
-
-## 🏗️ Estrutura do Projeto
-
-```
-src/
-├── components/          # Componentes reutilizáveis
-│   ├── Layout/         # Layout principal
-│   ├── Sidebar/        # Menu lateral
-│   ├── Header/         # Cabeçalho
-│   ├── StatCard/       # Card de estatísticas
-│   ├── RecentActivity/ # Atividades recentes
-│   ├── QuickActions/   # Ações rápidas
-│   ├── AnaliseForm/    # Formulário de análise
-│   ├── AnaliseResult/  # Resultado de análise
-│   ├── PropostaForm/   # Formulário de proposta
-│   ├── PropostaList/   # Lista de propostas
-│   ├── VisitaForm/     # Formulário de visita
-│   └── VisitaList/     # Lista de visitas
-├── pages/              # Páginas da aplicação
-│   ├── Dashboard/      # Página inicial
-│   ├── Analises/       # Análises inteligentes
-│   ├── Propostas/      # Gestão de propostas
-│   ├── Visitas/        # Gestão de visitas
-│   └── Configuracoes/  # Configurações
-├── services/           # Serviços de API
-│   └── apiService.ts   # Cliente HTTP
-├── styles/             # Estilos globais
-│   ├── _variables.scss # Variáveis SCSS
-│   ├── _reset.scss     # Reset CSS
-│   ├── _base.scss      # Estilos base
-│   ├── _components.scss # Estilos de componentes
-│   └── main.scss       # Arquivo principal
-└── App.tsx             # Componente raiz
-```
+---
 
 ## 🔌 Integração com Backend
 
-O frontend está configurado para se comunicar com o backend através da variável de ambiente `VITE_API_URL` (padrão: `http://localhost:5000/api`).
+### Configuração
 
-### Endpoints Esperados
+O frontend se comunica com o backend através da variável de ambiente `VITE_API_URL`:
 
-O serviço `apiService.ts` espera os seguintes endpoints:
+```env
+VITE_API_URL=http://localhost:5000/api
+```
 
-#### Dashboard
-- `GET /api/dashboard/stats` - Estatísticas do dashboard
+### Estrutura de Comunicação
+
+Todas as requisições são feitas através do serviço `apiService.ts`, que utiliza Axios com:
+- Interceptors para autenticação (se necessário)
+- Tratamento centralizado de erros
+- Headers configurados automaticamente
+
+### Endpoints Implementados
+
+#### 📊 Dashboard
+- `GET /api/dashboard/stats` - Estatísticas agregadas
 - `GET /api/dashboard/activities` - Atividades recentes
 
-#### Análises
-- `POST /api/analises/gerar` - Gerar análise com IA
-  ```json
-  {
-    "tipo": "performance" | "concorrencia" | "tendencia" | "oportunidade",
-    "dados": "string com dados para análise"
+#### 🤖 Análises
+- `POST /api/analises/gerar` - Geração de análises com IA
+  ```typescript
+  Body: {
+    tipo: "performance" | "concorrencia" | "tendencia" | "oportunidade"
+    dados: string
   }
-  ```
-  Resposta:
-  ```json
-  {
-    "resultado": "string com a análise gerada"
+  Response: {
+    resultado: string
   }
   ```
 
-#### Propostas
-- `GET /api/propostas` - Listar propostas
-- `POST /api/propostas` - Criar proposta
+#### 📝 Propostas
+- `GET /api/propostas` - Lista todas as propostas
+- `GET /api/propostas/:id` - Detalhes com checkpoints
+- `POST /api/propostas` - Criar nova proposta
 - `PUT /api/propostas/:id` - Atualizar proposta
+- `POST /api/propostas/:id/status` - Atualizar status (cria checkpoint)
 - `DELETE /api/propostas/:id` - Deletar proposta
 
-#### Visitas
-- `GET /api/visitas` - Listar visitas
-- `POST /api/visitas` - Criar visita
+#### 📍 Visitas
+- `GET /api/visitas` - Lista todas as visitas
+- `GET /api/visitas/:id` - Detalhes com checkpoints
+- `POST /api/visitas` - Criar nova visita
 - `PUT /api/visitas/:id` - Atualizar visita
+- `POST /api/visitas/:id/status` - Atualizar status (cria checkpoint)
 - `DELETE /api/visitas/:id` - Deletar visita
 
----
+### Formato de Status
 
-# 📋 PROMPT PARA CONSTRUÇÃO DO BACKEND
+**⚠️ IMPORTANTE**: O frontend envia status em **snake_case, tudo minúsculas**:
 
-Copie e cole o texto abaixo em um novo chat para construir o backend:
+**Propostas:**
+- `rascunho`, `pendente`, `enviada`
+- `em_analise_gerente_compras`, `em_analise_diretoria`
+- `aprovada`, `rejeitada`, `cancelada`
 
----
-
-## PROMPT INICIAL PARA BACKEND
-
-Preciso construir um backend completo para um sistema B2B de representantes comerciais que negociam com grandes redes de supermercados. O frontend já está pronto e espera se comunicar com este backend.
-
-### Contexto do Projeto
-
-O sistema visa:
-- **Decisão orientada a dados** através de análises inteligentes
-- **Redução de esforço operacional** com automações
-- **Aumento da taxa de conversão** por visita
-
-### Requisitos Técnicos
-
-1. **Stack Tecnológica**
-   - Use Node.js com Express ou Python com FastAPI (escolha a melhor opção)
-   - Banco de dados: PostgreSQL ou MongoDB (sua escolha)
-   - Integração com OpenAI API (ChatGPT) para funcionalidades de IA
-   - CORS configurado para aceitar requisições de `http://localhost:3000`
-
-2. **Estrutura de Dados**
-
-   **Propostas:**
-   ```typescript
-   {
-     id: string
-     cliente: string
-     valor: number
-     status: 'pendente' | 'aprovada' | 'rejeitada' | 'enviada'
-     dataCriacao: string (ISO date)
-     dataVencimento: string (ISO date)
-     descricao?: string
-     observacoes?: string
-   }
-   ```
-
-   **Visitas:**
-   ```typescript
-   {
-     id: string
-     cliente: string
-     data: string (ISO date)
-     hora: string
-     status: 'agendada' | 'realizada' | 'cancelada' | 'reagendada'
-     endereco?: string
-     observacoes?: string
-   }
-   ```
-
-   **Atividades:**
-   ```typescript
-   {
-     id: string
-     type: 'visita' | 'proposta' | 'analise'
-     description: string
-     timestamp: string (ISO date)
-     status: string
-   }
-   ```
-
-3. **Endpoints Necessários**
-
-   **Dashboard:**
-   - `GET /api/dashboard/stats`
-     - Retorna estatísticas agregadas:
-       ```json
-       {
-         "totalVisitas": number,
-         "taxaConversao": number,
-         "propostasPendentes": number,
-         "receitaMensal": number
-       }
-       ```
-   
-   - `GET /api/dashboard/activities`
-     - Retorna últimas 10 atividades recentes
-     - Array de objetos Activity
-
-   **Análises com IA:**
-   - `POST /api/analises/gerar`
-     - Body: `{ "tipo": string, "dados": string }`
-     - Tipos: "performance", "concorrencia", "tendencia", "oportunidade"
-     - Deve usar OpenAI API para gerar análises inteligentes baseadas nos dados fornecidos
-     - Retorna: `{ "resultado": string }` (análise gerada pela IA)
-     - **IMPORTANTE:** Use prompts específicos para cada tipo de análise:
-       - Performance: Analisar dados de vendas, visitas, conversões
-       - Concorrência: Comparar com mercado e concorrentes
-       - Tendências: Identificar padrões e tendências futuras
-       - Oportunidades: Sugerir oportunidades de negócio
-
-   **Propostas:**
-   - `GET /api/propostas` - Lista todas as propostas
-   - `POST /api/propostas` - Cria nova proposta
-   - `PUT /api/propostas/:id` - Atualiza proposta existente
-   - `DELETE /api/propostas/:id` - Deleta proposta
-
-   **Visitas:**
-   - `GET /api/visitas` - Lista todas as visitas
-   - `POST /api/visitas` - Cria nova visita
-   - `PUT /api/visitas/:id` - Atualiza visita existente
-   - `DELETE /api/visitas/:id` - Deleta visita
-
-4. **Integração com OpenAI**
-
-   - Configure a API Key do ChatGPT através de variável de ambiente: `OPENAI_API_KEY`
-   - Crie um serviço/module para comunicação com OpenAI
-   - Para análises, use o modelo `gpt-4` ou `gpt-3.5-turbo`
-   - Crie prompts contextuais específicos para cada tipo de análise
-   - Exemplo de prompt para análise de performance:
-     ```
-     "Você é um especialista em análise comercial B2B. Analise os seguintes dados de um representante comercial que negocia com redes de supermercados e forneça insights acionáveis sobre performance, pontos fortes, áreas de melhoria e recomendações estratégicas. Dados: {dados}"
-     ```
-
-5. **Funcionalidades Adicionais Desejadas**
-
-   - **Geração de Propostas com IA:** Endpoint adicional `POST /api/propostas/gerar-com-ia` que recebe dados básicos e gera uma proposta completa usando IA
-   - **Sugestões Inteligentes:** Endpoint `GET /api/dashboard/sugestoes` que retorna sugestões baseadas em dados históricos
-   - **Validações:** Valide todos os inputs (valores, datas, etc.)
-   - **Tratamento de Erros:** Retorne erros formatados: `{ "error": "mensagem", "code": "CODIGO" }`
-
-6. **Configuração**
-
-   - Porta padrão: `5000`
-   - Base URL da API: `/api`
-   - Variáveis de ambiente necessárias:
-     - `OPENAI_API_KEY` (obrigatória)
-     - `DATABASE_URL` (se usar banco de dados)
-     - `PORT` (opcional, padrão 5000)
-
-7. **Estrutura de Código**
-
-   Organize o código seguindo boas práticas:
-   - Separação de responsabilidades (controllers, services, models)
-   - Middleware para validação e tratamento de erros
-   - Configuração centralizada
-   - Documentação clara do código
-
-8. **Dados Mock (Opcional)**
-
-   Se preferir começar sem banco de dados, pode usar dados em memória para desenvolvimento inicial, mas deixe preparado para migração para banco de dados real.
-
-### Entregáveis Esperados
-
-1. Código backend completo e funcional
-2. README.md com instruções de instalação e execução
-3. Arquivo `.env.example` com variáveis de ambiente necessárias
-4. Estrutura de pastas organizada
-5. Tratamento de erros robusto
-6. Integração funcional com OpenAI API
-
-### Observações Importantes
-
-- O frontend já está pronto e fazendo requisições para esses endpoints
-- Use TypeScript se possível (ou tipagem adequada)
-- Siga as melhores práticas de segurança (validação de inputs, sanitização, etc.)
-- O sistema deve ser escalável e fácil de manter
-- Documente bem o código
-
-Por favor, construa este backend completo seguindo essas especificações. Se tiver dúvidas sobre algum endpoint ou funcionalidade, pergunte antes de implementar.
+**Visitas:**
+- `agendada`, `confirmada`, `em_andamento`
+- `realizada`, `cancelada`, `reagendada`
 
 ---
 
-**FIM DO PROMPT**
+## 📱 Responsividade
+
+### Desktop (≥ 1024px)
+- Sidebar fixa com navegação completa
+- Tabelas otimizadas para visualização de dados
+- Layout espaçoso e profissional
+
+### Mobile (< 1024px)
+- Menu bottom fixo para navegação rápida
+- Cards ao invés de tabelas
+- Interface touch-friendly
+- Sidebar oculta automaticamente
+
+---
+
+## 🎨 Design System
+
+### Cores
+- **Primária**: `#4f46e5` (Índigo)
+- **Secundária**: `#059669` (Verde)
+- **Neutras**: Escala de cinzas profissional
+- **Status**: Cores semânticas para feedback visual
+
+### Tipografia
+- **Fonte**: Inter (Google Fonts)
+- **Hierarquia**: Tamanhos bem definidos (0.75rem a 2.5rem)
+- **Pesos**: 400, 500, 600, 700, 800
+
+### Componentes
+- Cards com glassmorphism
+- Botões com estados hover/active
+- Badges para status
+- Inputs com feedback visual
+- Animações suaves (cubic-bezier)
+
+---
+
+## 🚀 Scripts Disponíveis
+
+```bash
+# Desenvolvimento
+npm run dev          # Inicia servidor de desenvolvimento (porta 3000)
+
+# Build
+npm run build        # Gera build de produção
+npm run preview      # Preview do build de produção
+
+# Qualidade
+npm run lint         # Executa ESLint
+```
+
+---
+
+## 📚 Documentação Adicional
+
+### Para Desenvolvedores
+
+- **Estrutura de Componentes**: Cada componente segue o padrão de arquivo único (`.tsx` + `.scss`)
+- **TypeScript**: Interfaces definidas para todos os dados
+- **SCSS**: Variáveis centralizadas em `_variables.scss`
+- **API Service**: Cliente HTTP centralizado com tratamento de erros
+
+### Para Backend
+
+Consulte o arquivo de documentação do backend para implementação completa da API.
+
+---
+
+## 🔒 Segurança
+
+- Validação de inputs no frontend
+- Sanitização de dados antes do envio
+- Headers de segurança configurados
+- Tratamento seguro de tokens (se implementado)
+
+---
+
+## 📈 Performance
+
+- **Vite**: Build extremamente rápido
+- **Code Splitting**: Carregamento otimizado de rotas
+- **Lazy Loading**: Componentes carregados sob demanda
+- **Otimizações**: Imagens e assets otimizados
+
+---
+
+## Contribuindo
+
+1. Fork o projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
+
+---
+
+## 📄 Licença
+
+Este projeto é proprietário. Todos os direitos reservados.
+
+---
+
+## 👥 Contato
+
+Para dúvidas ou suporte, entre em contato através dos canais oficiais.
+
+---
+
+<div align="center">
+
+**Desenvolvido com exelência para representantes comerciais B2B**
+
+</div>
