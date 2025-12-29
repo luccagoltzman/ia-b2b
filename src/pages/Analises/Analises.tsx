@@ -47,7 +47,11 @@ const Analises = () => {
 
         {analiseData?.resultado && (
           <div className="analises-result-section">
-            <AnaliseResult data={analiseData} />
+            <AnaliseResult data={{
+              tipo: analiseData.tipo,
+              dados: analiseData.dados,
+              resultado: analiseData.resultado
+            }} />
           </div>
         )}
       </div>
