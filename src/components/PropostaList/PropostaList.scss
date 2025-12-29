@@ -1,5 +1,12 @@
 @use '../../styles/variables' as *;
 
+.proposta-list-actions {
+  display: flex;
+  gap: $spacing-sm;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
 .proposta-list {
   width: 100%;
   max-width: 100%;

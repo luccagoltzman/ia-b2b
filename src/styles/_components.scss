@@ -96,6 +96,11 @@
       box-shadow: $shadow-sm;
     }
   }
+
+  &-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.8125rem;
+  }
 }
 
 // Cards - Glassmorphism e profundidade

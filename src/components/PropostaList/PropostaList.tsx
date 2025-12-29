@@ -1,3 +1,4 @@
+import { exportService } from '../../services/exportService'
 import './PropostaList.scss'
 
 interface Proposta {
@@ -70,9 +71,25 @@ const PropostaList = ({ propostas, loading, onEdit, onView, onRefresh }: Propost
     <div className="card">
       <div className="card-header">
         <h3 className="card-title">Lista de Propostas</h3>
-        <button className="btn btn-secondary" onClick={onRefresh}>
-          Atualizar
-        </button>
+        <div className="proposta-list-actions">
+          <button 
+            className="btn btn-secondary btn-sm" 
+            onClick={() => exportService.exportPropostasToPDF(propostas)}
+            title="Exportar para PDF"
+          >
+            📄 PDF
+          </button>
+          <button 
+            className="btn btn-secondary btn-sm" 
+            onClick={() => exportService.exportPropostasToExcel(propostas)}
+            title="Exportar para Excel"
+          >
+            📊 Excel
+          </button>
+          <button className="btn btn-secondary" onClick={onRefresh}>
+            Atualizar
+          </button>
+        </div>
       </div>
       
       {/* Versão Desktop - Tabela */}

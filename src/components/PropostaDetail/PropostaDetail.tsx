@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import PropostaTimeline from '../PropostaTimeline/PropostaTimeline'
+import { exportService } from '../../services/exportService'
 import './PropostaDetail.scss'
 
 interface Checkpoint {
@@ -330,12 +331,30 @@ const PropostaDetail = ({ proposta, onClose, onEdit, onUpdateStatus }: PropostaD
         </div>
 
         <div className="proposta-detail-footer">
-          <button className="btn btn-secondary" onClick={onClose}>
-            Fechar
-          </button>
-          <button className="btn btn-primary" onClick={onEdit}>
-            Editar Proposta
-          </button>
+          <div className="proposta-detail-export-actions">
+            <button 
+              className="btn btn-secondary btn-sm" 
+              onClick={() => exportService.exportPropostaToPDF(proposta)}
+              title="Exportar para PDF"
+            >
+              📄 PDF
+            </button>
+            <button 
+              className="btn btn-secondary btn-sm" 
+              onClick={() => exportService.exportPropostaToExcel(proposta)}
+              title="Exportar para Excel"
+            >
+              📊 Excel
+            </button>
+          </div>
+          <div className="proposta-detail-main-actions">
+            <button className="btn btn-secondary" onClick={onClose}>
+              Fechar
+            </button>
+            <button className="btn btn-primary" onClick={onEdit}>
+              Editar Proposta
+            </button>
+          </div>
         </div>
       </div>
     </div>
