@@ -21,6 +21,7 @@
   padding: $spacing-xl;
   overflow-y: auto;
   position: relative;
+  padding-bottom: 80px; // Espaço para o bottom nav em mobile
 
   &::-webkit-scrollbar {
     width: 8px;
@@ -37,6 +38,15 @@
     &:hover {
       background: $text-light;
     }
+  }
+
+  @media (min-width: $breakpoint-lg + 1px) {
+    padding-bottom: $spacing-xl;
+  }
+
+  @media (max-width: $breakpoint-lg) {
+    padding: $spacing-md $spacing-lg;
+    padding-bottom: 80px;
   }
 }
 

@@ -1,27 +1,45 @@
 @use '../../styles/variables' as *;
 
 .proposta-list {
-  overflow-x: auto;
-  border-radius: $radius-lg;
   width: 100%;
   max-width: 100%;
-  
-  // Scrollbar customizada
-  &::-webkit-scrollbar {
-    height: 8px;
-  }
 
-  &::-webkit-scrollbar-track {
-    background: $bg-tertiary;
-    border-radius: $radius-full;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: $border-color;
-    border-radius: $radius-full;
+  &-desktop {
+    display: block;
+    overflow-x: auto;
+    border-radius: $radius-lg;
     
-    &:hover {
-      background: $text-light;
+    @media (max-width: $breakpoint-lg) {
+      display: none;
+    }
+    
+    // Scrollbar customizada
+    &::-webkit-scrollbar {
+      height: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: $bg-tertiary;
+      border-radius: $radius-full;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: $border-color;
+      border-radius: $radius-full;
+      
+      &:hover {
+        background: $text-light;
+      }
+    }
+  }
+
+  &-mobile {
+    display: none;
+    flex-direction: column;
+    gap: $spacing-md;
+
+    @media (max-width: $breakpoint-lg) {
+      display: flex;
     }
   }
 
@@ -150,5 +168,75 @@
   font-size: 0.8125rem;
   line-height: 1.4;
   font-weight: 400;
+}
+
+// Cards Mobile
+.proposta-card {
+  background: $bg-primary;
+  border: 1px solid $border-light;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  transition: all $transition-base;
+
+  &:hover {
+    border-color: $primary-color;
+    box-shadow: $shadow-md;
+    transform: translateY(-2px);
+  }
+
+  &-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: $spacing-md;
+    gap: $spacing-sm;
+  }
+
+  &-cliente {
+    font-size: 1rem;
+    font-weight: 600;
+    color: $text-primary;
+    flex: 1;
+  }
+
+  &-descricao {
+    font-size: 0.875rem;
+    color: $text-secondary;
+    line-height: 1.5;
+    margin-bottom: $spacing-md;
+  }
+
+  &-valor {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: $text-primary;
+    margin-bottom: $spacing-md;
+  }
+
+  &-dates {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+    margin-bottom: $spacing-md;
+    padding-top: $spacing-md;
+    border-top: 1px solid $border-light;
+  }
+
+  &-date {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8125rem;
+    color: $text-secondary;
+
+    &-label {
+      font-weight: 500;
+      color: $text-primary;
+    }
+  }
+
+  &-actions {
+    display: flex;
+    gap: $spacing-sm;
+  }
 }
 

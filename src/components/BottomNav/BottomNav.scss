@@ -1,0 +1,63 @@
+@use '../../styles/variables' as *;
+
+.bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: $bg-primary;
+  border-top: 1px solid $border-light;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+  z-index: 100;
+  padding: $spacing-sm 0;
+  backdrop-filter: blur(10px);
+
+  @media (max-width: $breakpoint-lg) {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+  }
+}
+
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: $spacing-sm;
+  border-radius: $radius-md;
+  color: $text-secondary;
+  transition: all $transition-base;
+  flex: 1;
+  text-decoration: none;
+  min-width: 0;
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &.active {
+    color: $primary-color;
+
+    .bottom-nav-icon {
+      transform: scale(1.1);
+    }
+  }
+}
+
+.bottom-nav-icon {
+  font-size: 1.25rem;
+  transition: transform $transition-base;
+}
+
+.bottom-nav-label {
+  font-size: 0.625rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+

@@ -69,7 +69,9 @@ const PropostaList = ({ propostas, loading, onEdit, onRefresh }: PropostaListPro
           Atualizar
         </button>
       </div>
-      <div className="proposta-list">
+      
+      {/* Versão Desktop - Tabela */}
+      <div className="proposta-list proposta-list-desktop">
         <table className="proposta-table">
           <thead>
             <tr>
@@ -115,6 +117,53 @@ const PropostaList = ({ propostas, loading, onEdit, onRefresh }: PropostaListPro
             })}
           </tbody>
         </table>
+      </div>
+
+      {/* Versão Mobile - Cards */}
+      <div className="proposta-list proposta-list-mobile">
+        {propostas.map((proposta) => {
+          const status = getStatusBadge(proposta.status)
+          return (
+            <div key={proposta.id} className="proposta-card">
+              <div className="proposta-card-header">
+                <div className="proposta-card-cliente">{proposta.cliente}</div>
+                <span className={`badge badge-${status.class}`}>
+                  {status.label}
+                </span>
+              </div>
+              
+              {proposta.descricao && (
+                <div className="proposta-card-descricao">
+                  {proposta.descricao}
+                </div>
+              )}
+              
+              <div className="proposta-card-valor">
+                {formatCurrency(proposta.valor)}
+              </div>
+              
+              <div className="proposta-card-dates">
+                <div className="proposta-card-date">
+                  <span className="proposta-card-date-label">Criação:</span>
+                  <span>{formatDate(proposta.dataCriacao)}</span>
+                </div>
+                <div className="proposta-card-date">
+                  <span className="proposta-card-date-label">Vencimento:</span>
+                  <span>{formatDate(proposta.dataVencimento)}</span>
+                </div>
+              </div>
+              
+              <div className="proposta-card-actions">
+                <button
+                  className="btn btn-primary"
+                  onClick={() => onEdit(proposta)}
+                >
+                  Editar
+                </button>
+              </div>
+            </div>
+          )
+        })}
       </div>
     </div>
   )

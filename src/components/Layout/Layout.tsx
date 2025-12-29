@@ -1,6 +1,7 @@
 import { ReactNode } from 'react'
 import Sidebar from '../Sidebar/Sidebar'
 import Header from '../Header/Header'
+import BottomNav from '../BottomNav/BottomNav'
 import './Layout.scss'
 
 interface LayoutProps {
@@ -17,6 +18,7 @@ const Layout = ({ children }: LayoutProps) => {
           {children}
         </main>
       </div>
+      <BottomNav />
     </div>
   )
 }
