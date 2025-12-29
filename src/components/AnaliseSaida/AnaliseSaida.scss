@@ -1,0 +1,242 @@
+@use '../../styles/variables' as *;
+
+.analise-saida-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-lg;
+}
+
+.analise-saida-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.analise-saida-content {
+  position: relative;
+  background: $bg-primary;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-xl;
+  max-width: 900px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  z-index: 1001;
+}
+
+.analise-saida-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: $spacing-xl;
+  border-bottom: 1px solid $border-light;
+
+  h2 {
+    margin-bottom: $spacing-xs;
+    font-size: 1.5rem;
+    color: $text-primary;
+  }
+
+  .analise-saida-subtitle {
+    color: $text-secondary;
+    font-size: 0.875rem;
+  }
+
+  .btn-close {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    color: $text-secondary;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: $radius-md;
+    transition: all $transition-fast;
+
+    &:hover {
+      background: $bg-tertiary;
+      color: $text-primary;
+    }
+  }
+}
+
+.analise-saida-form {
+  padding: $spacing-xl;
+}
+
+.form-section {
+  margin-bottom: $spacing-xl;
+
+  h4 {
+    margin-bottom: $spacing-md;
+    font-size: 1.125rem;
+    color: $text-primary;
+  }
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $spacing-md;
+  margin-bottom: $spacing-md;
+
+  @media (max-width: $breakpoint-md) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-group {
+  margin-bottom: $spacing-md;
+
+  label {
+    display: block;
+    margin-bottom: $spacing-xs;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: $text-primary;
+  }
+}
+
+.analise-saida-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: $spacing-md;
+  padding: $spacing-xl;
+  border-top: 1px solid $border-light;
+}
+
+.analise-saida-resultado {
+  padding: $spacing-xl;
+}
+
+.resultado-header {
+  margin-bottom: $spacing-xl;
+  display: flex;
+  justify-content: center;
+}
+
+.status-badge {
+  padding: $spacing-sm $spacing-lg;
+  border-radius: $radius-full;
+  font-weight: 600;
+  font-size: 0.9375rem;
+}
+
+.resultado-secao {
+  margin-bottom: $spacing-xl;
+
+  h4 {
+    margin-bottom: $spacing-md;
+    font-size: 1.125rem;
+    color: $text-primary;
+  }
+
+  .resultado-texto {
+    color: $text-secondary;
+    line-height: 1.6;
+    font-size: 0.9375rem;
+  }
+}
+
+.resultado-lista {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  li {
+    padding: $spacing-sm 0;
+    padding-left: $spacing-lg;
+    position: relative;
+    color: $text-secondary;
+    line-height: 1.6;
+
+    &::before {
+      content: '•';
+      position: absolute;
+      left: 0;
+      color: $primary-color;
+      font-weight: bold;
+    }
+  }
+}
+
+.acoes-list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.acao-item {
+  padding: $spacing-md;
+  background: $bg-tertiary;
+  border-radius: $radius-md;
+  border-left: 3px solid $primary-color;
+
+  .acao-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $spacing-xs;
+  }
+
+  .acao-texto {
+    flex: 1;
+    color: $text-primary;
+    font-weight: 500;
+  }
+
+  .acao-prioridade {
+    padding: $spacing-xs $spacing-sm;
+    border-radius: $radius-sm;
+    font-size: 0.75rem;
+    font-weight: 600;
+
+    &.prioridade-alta {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+
+    &.prioridade-media {
+      background: #fef3c7;
+      color: #d97706;
+    }
+
+    &.prioridade-baixa {
+      background: #dbeafe;
+      color: #2563eb;
+    }
+  }
+
+  .acao-prazo {
+    font-size: 0.8125rem;
+    color: $text-secondary;
+  }
+}
+
+.alert {
+  padding: $spacing-md;
+  border-radius: $radius-md;
+  margin-bottom: $spacing-md;
+
+  &.alert-error {
+    background: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+  }
+}
+

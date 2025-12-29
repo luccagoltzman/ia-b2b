@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import AnaliseForm from '../../components/AnaliseForm/AnaliseForm'
 import AnaliseResult from '../../components/AnaliseResult/AnaliseResult'
 import { apiService } from '../../services/apiService'
@@ -11,8 +12,19 @@ interface AnaliseData {
 }
 
 const Analises = () => {
+  const location = useLocation()
   const [analiseData, setAnaliseData] = useState<AnaliseData | null>(null)
   const [loading, setLoading] = useState(false)
+  const [produtoSelecionado, setProdutoSelecionado] = useState<string | null>(null)
+
+  useEffect(() => {
+    // Se veio do Dashboard com produto selecionado, fazer análise automática
+    const produtoAnalise = (location.state as any)?.produtoAnalise
+    if (produtoAnalise) {
+      setProdutoSelecionado(produtoAnalise)
+      handleAnalisarProduto(produtoAnalise)
+    }
+  }, [location])
 
   const handleAnaliseSubmit = async (tipo: string, dados: any) => {
     setLoading(true)
@@ -31,6 +43,24 @@ const Analises = () => {
     }
   }
 
+  const handleAnalisarProduto = async (produto: string) => {
+    setLoading(true)
+    setProdutoSelecionado(produto)
+    try {
+      const resultado = await apiService.analisarProduto(produto)
+      setAnaliseData({
+        tipo: 'produto',
+        dados: { produto },
+        resultado: resultado.analise || resultado.resultado || JSON.stringify(resultado, null, 2)
+      })
+    } catch (error: any) {
+      console.error('Erro ao analisar produto:', error)
+      alert(error.response?.data?.message || 'Erro ao analisar produto. Tente novamente.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="analises">
       <div className="analises-header">
@@ -39,6 +69,14 @@ const Analises = () => {
           Use IA para analisar dados e obter insights valiosos para suas negociações
         </p>
       </div>
+
+      {produtoSelecionado && (
+        <div className="analises-produto-info">
+          <p>
+            <strong>Analisando produto:</strong> {produtoSelecionado}
+          </p>
+        </div>
+      )}
 
       <div className="analises-content">
         <div className="analises-form-section">

@@ -1,0 +1,191 @@
+@use '../../styles/variables' as *;
+
+.produtos-insights {
+  background: $bg-primary;
+  border-radius: $radius-lg;
+  padding: $spacing-xl;
+  box-shadow: $shadow-sm;
+
+  .insights-header {
+    margin-bottom: $spacing-xl;
+
+    h3 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: $text-primary;
+      margin-bottom: $spacing-xs;
+    }
+
+    .text-secondary {
+      font-size: 0.875rem;
+      color: $text-secondary;
+    }
+  }
+
+  .loading-state,
+  .error-state,
+  .empty-state {
+    text-align: center;
+    padding: $spacing-2xl;
+    color: $text-secondary;
+    font-size: 0.875rem;
+  }
+
+  .error-state {
+    color: $error;
+  }
+
+  .insights-list {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-lg;
+  }
+
+  .insight-card {
+    display: flex;
+    gap: $spacing-lg;
+    padding: $spacing-lg;
+    border: 1px solid $border-color;
+    border-radius: $radius-md;
+    transition: all 0.2s ease;
+    background: $bg-primary;
+
+    &:hover {
+      border-color: $primary-color;
+      box-shadow: $shadow-md;
+      transform: translateY(-2px);
+    }
+
+    .insight-rank {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 48px;
+      height: 48px;
+      background: $primary-gradient;
+      border-radius: $radius-md;
+      color: $bg-primary;
+      font-weight: 700;
+      font-size: 1.125rem;
+
+      .rank-number {
+        display: block;
+      }
+    }
+
+    .insight-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: $spacing-md;
+    }
+
+    .insight-header {
+      display: flex;
+      align-items: center;
+      gap: $spacing-sm;
+      flex-wrap: wrap;
+
+      .produto-nome {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: $text-primary;
+        margin: 0;
+      }
+
+      .produto-marca {
+        font-size: 0.875rem;
+        color: $text-secondary;
+        background: $bg-tertiary;
+        padding: $spacing-xs $spacing-sm;
+        border-radius: $radius-sm;
+      }
+    }
+
+    .insight-metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: $spacing-md;
+    }
+
+    .metric {
+      display: flex;
+      flex-direction: column;
+      gap: $spacing-xs;
+
+      .metric-label {
+        font-size: 0.75rem;
+        color: $text-secondary;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .metric-value {
+        font-size: 1rem;
+        font-weight: 600;
+        color: $text-primary;
+
+        &.high {
+          color: $success;
+        }
+
+        &.medium {
+          color: $warning;
+        }
+
+        &.low {
+          color: $error;
+        }
+
+        &.highlight {
+          color: $primary-color;
+          font-size: 1.125rem;
+        }
+      }
+    }
+
+    .btn-analisar {
+      align-self: flex-start;
+      padding: $spacing-sm $spacing-lg;
+      background: $primary-color;
+      color: $bg-primary;
+      border: none;
+      border-radius: $radius-md;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: $primary-dark;
+        transform: translateY(-1px);
+        box-shadow: $shadow-sm;
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+  }
+}
+
+// Responsive
+@media (max-width: $breakpoint-md) {
+  .produtos-insights {
+    padding: $spacing-lg;
+
+    .insight-card {
+      flex-direction: column;
+      gap: $spacing-md;
+
+      .insight-rank {
+        align-self: flex-start;
+      }
+
+      .insight-metrics {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  }
+}
+

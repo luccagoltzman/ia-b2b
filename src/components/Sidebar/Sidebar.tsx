@@ -7,6 +7,7 @@ const Sidebar = () => {
     { path: '/analises', label: 'Análises', icon: '📈' },
     { path: '/propostas', label: 'Propostas', icon: '📝' },
     { path: '/visitas', label: 'Visitas', icon: '📍' },
+    { path: '/pos-venda', label: 'Pós-Venda', icon: '📦' },
     { path: '/configuracoes', label: 'Configurações', icon: '⚙️' },
   ]
 

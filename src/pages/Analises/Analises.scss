@@ -19,5 +19,22 @@
   &-result-section {
     width: 100%;
   }
+
+  &-produto-info {
+    background: $primary-color;
+    color: $bg-primary;
+    padding: $spacing-md $spacing-lg;
+    border-radius: $radius-md;
+    margin-bottom: $spacing-lg;
+    font-size: 0.875rem;
+
+    p {
+      margin: 0;
+    }
+
+    strong {
+      font-weight: 600;
+    }
+  }
 }
 

@@ -4,6 +4,7 @@ import Dashboard from './pages/Dashboard/Dashboard'
 import Analises from './pages/Analises/Analises'
 import Propostas from './pages/Propostas/Propostas'
 import Visitas from './pages/Visitas/Visitas'
+import PosVenda from './pages/PosVenda/PosVenda'
 import Configuracoes from './pages/Configuracoes/Configuracoes'
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
           <Route path="/analises" element={<Analises />} />
           <Route path="/propostas" element={<Propostas />} />
           <Route path="/visitas" element={<Visitas />} />
+          <Route path="/pos-venda" element={<PosVenda />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
         </Routes>
       </Layout>

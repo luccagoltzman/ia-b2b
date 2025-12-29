@@ -4,9 +4,9 @@ import './BottomNav.scss'
 const BottomNav = () => {
   const menuItems = [
     { path: '/', label: 'Dashboard', icon: '📊' },
-    { path: '/analises', label: 'Análises', icon: '📈' },
     { path: '/propostas', label: 'Propostas', icon: '📝' },
     { path: '/visitas', label: 'Visitas', icon: '📍' },
+    { path: '/pos-venda', label: 'Pós-Venda', icon: '📦' },
     { path: '/configuracoes', label: 'Config', icon: '⚙️' },
   ]
 

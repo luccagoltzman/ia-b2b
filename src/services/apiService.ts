@@ -135,5 +135,41 @@ export const apiService = {
     const response = await api.delete(`/visitas/${id}`)
     return response.data
   },
+
+  // Pós-Venda
+  async analisarSaidaProduto(dados: {
+    propostaId: string
+    cliente: string
+    produto: string
+    marca: string
+    quantidadeVendida: number
+    periodoAnalise: string
+    observacoes?: string
+    posicionamento?: string
+    concorrencia?: string
+    precoAtual?: number
+  }) {
+    const response = await api.post('/pos-venda/analisar-saida', dados)
+    return response.data
+  },
+
+  async getHistoricoAnalises(propostaId: string) {
+    const response = await api.get(`/pos-venda/historico/${propostaId}`)
+    return response.data
+  },
+
+  // Análise de Produtos
+  async getProdutosInsights() {
+    const response = await api.get('/analises/produtos/insights')
+    return response.data
+  },
+
+  async analisarProduto(produto: string, dadosAdicionais?: any) {
+    const response = await api.post('/analises/produtos/analisar', {
+      produto,
+      ...dadosAdicionais
+    })
+    return response.data
+  },
 }
 

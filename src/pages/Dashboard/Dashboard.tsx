@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { apiService } from '../../services/apiService'
 import StatCard from '../../components/StatCard/StatCard'
 import RecentActivity from '../../components/RecentActivity/RecentActivity'
 import QuickActions from '../../components/QuickActions/QuickActions'
+import ProdutosInsights from '../../components/ProdutosInsights/ProdutosInsights'
 import './Dashboard.scss'
 
 interface DashboardStats {
@@ -15,6 +17,7 @@ interface DashboardStats {
 const Dashboard = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [loading, setLoading] = useState(true)
+  const navigate = useNavigate()
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -30,6 +33,10 @@ const Dashboard = () => {
 
     fetchStats()
   }, [])
+
+  const handleAnalisarProduto = (produto: string) => {
+    navigate('/analises', { state: { produtoAnalise: produto } })
+  }
 
   if (loading) {
     return <div className="loading-container">Carregando...</div>
@@ -76,6 +83,10 @@ const Dashboard = () => {
       <div className="dashboard-content grid grid-2">
         <RecentActivity />
         <QuickActions />
+      </div>
+
+      <div className="dashboard-insights">
+        <ProdutosInsights onAnalisarProduto={handleAnalisarProduto} />
       </div>
     </div>
   )

@@ -2,20 +2,20 @@ import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import * as XLSX from 'xlsx-js-style'
 
-// Cores do projeto
-const COLORS = {
-  primary: '#4f46e5',
-  primaryDark: '#4338ca',
-  secondary: '#059669',
-  textPrimary: '#0f172a',
-  textSecondary: '#475569',
-  bgPrimary: '#ffffff',
-  bgTertiary: '#f8fafc',
-  success: '#10b981',
-  warning: '#f59e0b',
-  error: '#ef4444',
-  info: '#3b82f6'
-}
+// Cores do projeto (mantido para referência futura)
+// const COLORS = {
+//   primary: '#4f46e5',
+//   primaryDark: '#4338ca',
+//   secondary: '#059669',
+//   textPrimary: '#0f172a',
+//   textSecondary: '#475569',
+//   bgPrimary: '#ffffff',
+//   bgTertiary: '#f8fafc',
+//   success: '#10b981',
+//   warning: '#f59e0b',
+//   error: '#ef4444',
+//   info: '#3b82f6'
+// }
 
 interface Proposta {
   id: string
@@ -409,173 +409,6 @@ export const exportService = {
     const fileName = `pedido_${pedidoNumero}_${proposta.cliente.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`
     doc.save(fileName)
   },
-    
-    // Informações Básicas
-    doc.setFontSize(14)
-    doc.setFont('helvetica', 'bold')
-    doc.text('INFORMAÇÕES BÁSICAS', 20, yPos)
-    yPos += 10
-    
-    doc.setFontSize(10)
-    doc.setFont('helvetica', 'normal')
-    doc.text(`Cliente: ${proposta.cliente}`, 20, yPos)
-    yPos += 7
-    
-    if (proposta.produto) {
-      doc.text(`Produto: ${proposta.produto}`, 20, yPos)
-      yPos += 7
-    }
-    
-    if (proposta.marca) {
-      doc.text(`Marca: ${proposta.marca}`, 20, yPos)
-      yPos += 7
-    }
-    
-    if (proposta.categoria) {
-      doc.text(`Categoria: ${proposta.categoria}`, 20, yPos)
-      yPos += 7
-    }
-    
-    doc.text(`Valor Total: ${formatCurrency(proposta.valor)}`, 20, yPos)
-    yPos += 7
-    
-    doc.text(`Status: ${getStatusLabel(proposta.status)}`, 20, yPos)
-    yPos += 15
-    
-    // Valores e Quantidades
-    if (proposta.valorUnitario || proposta.quantidade) {
-      doc.setFontSize(14)
-      doc.setFont('helvetica', 'bold')
-      doc.text('VALORES E QUANTIDADES', 20, yPos)
-      yPos += 10
-      
-      doc.setFontSize(10)
-      doc.setFont('helvetica', 'normal')
-      
-      if (proposta.valorUnitario) {
-        doc.text(`Valor Unitário: ${formatCurrency(proposta.valorUnitario)}`, 20, yPos)
-        yPos += 7
-      }
-      
-      if (proposta.quantidade) {
-        doc.text(`Quantidade: ${proposta.quantidade} ${proposta.unidadeMedida || ''}`, 20, yPos)
-        yPos += 7
-      }
-      
-      if (proposta.desconto) {
-        const descontoText = proposta.descontoTipo === 'percentual' 
-          ? `${proposta.desconto}%` 
-          : formatCurrency(proposta.desconto)
-        doc.text(`Desconto: ${descontoText}`, 20, yPos)
-        yPos += 7
-      }
-      
-      yPos += 8
-    }
-    
-    // Condições Comerciais
-    if (proposta.condicoesPagamento || proposta.prazoEntrega) {
-      doc.setFontSize(14)
-      doc.setFont('helvetica', 'bold')
-      doc.text('CONDIÇÕES COMERCIAIS', 20, yPos)
-      yPos += 10
-      
-      doc.setFontSize(10)
-      doc.setFont('helvetica', 'normal')
-      
-      if (proposta.condicoesPagamento) {
-        doc.text(`Pagamento: ${proposta.condicoesPagamento}`, 20, yPos)
-        yPos += 7
-      }
-      
-      if (proposta.prazoEntrega) {
-        doc.text(`Entrega: ${proposta.prazoEntrega}`, 20, yPos)
-        yPos += 7
-      }
-      
-      yPos += 8
-    }
-    
-    // Estratégia de Representação
-    if (proposta.estrategiaRepresentacao || proposta.publicoAlvo || proposta.diferenciaisCompetitivos) {
-      doc.setFontSize(14)
-      doc.setFont('helvetica', 'bold')
-      doc.text('ESTRATÉGIA DE REPRESENTAÇÃO', 20, yPos)
-      yPos += 10
-      
-      doc.setFontSize(10)
-      doc.setFont('helvetica', 'normal')
-      
-      if (proposta.estrategiaRepresentacao) {
-        const strategyLines = doc.splitTextToSize(proposta.estrategiaRepresentacao, 170)
-        doc.text(strategyLines, 20, yPos)
-        yPos += strategyLines.length * 5 + 5
-      }
-      
-      if (proposta.publicoAlvo) {
-        doc.text(`Público-Alvo: ${proposta.publicoAlvo}`, 20, yPos)
-        yPos += 7
-      }
-      
-      if (proposta.diferenciaisCompetitivos) {
-        doc.setFont('helvetica', 'bold')
-        doc.text('Diferenciais:', 20, yPos)
-        yPos += 7
-        doc.setFont('helvetica', 'normal')
-        const diffLines = doc.splitTextToSize(proposta.diferenciaisCompetitivos, 170)
-        doc.text(diffLines, 20, yPos)
-        yPos += diffLines.length * 5 + 5
-      }
-      
-      yPos += 8
-    }
-    
-    // Descrição
-    if (proposta.descricao) {
-      doc.setFontSize(14)
-      doc.setFont('helvetica', 'bold')
-      doc.text('DESCRIÇÃO', 20, yPos)
-      yPos += 10
-      
-      doc.setFontSize(10)
-      doc.setFont('helvetica', 'normal')
-      const descLines = doc.splitTextToSize(proposta.descricao, 170)
-      doc.text(descLines, 20, yPos)
-      yPos += descLines.length * 5 + 5
-    }
-    
-    // Observações
-    if (proposta.observacoes) {
-      if (yPos > 250) {
-        doc.addPage()
-        yPos = 20
-      }
-      
-      doc.setFontSize(14)
-      doc.setFont('helvetica', 'bold')
-      doc.text('OBSERVAÇÕES', 20, yPos)
-      yPos += 10
-      
-      doc.setFontSize(10)
-      doc.setFont('helvetica', 'normal')
-      const obsLines = doc.splitTextToSize(proposta.observacoes, 170)
-      doc.text(obsLines, 20, yPos)
-    }
-    
-    // Rodapé
-    doc.setFontSize(8)
-    doc.setTextColor(71, 85, 105) // #475569
-    doc.text(
-      `Gerado em ${new Date().toLocaleString('pt-BR')}`,
-      doc.internal.pageSize.getWidth() / 2,
-      doc.internal.pageSize.getHeight() - 10,
-      { align: 'center' }
-    )
-    
-    // Salvar arquivo
-    const fileName = `proposta_${proposta.cliente.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`
-    doc.save(fileName)
-  },
 
   // Exportar lista de propostas para Excel
   exportPropostasToExcel(propostas: Proposta[]) {
@@ -724,8 +557,17 @@ export const exportService = {
 
   // Exportar proposta individual para Excel
   exportPropostaToExcel(proposta: Proposta) {
+    // Interface para itens das seções
+    interface SectionItem {
+      label: string
+      value: string | number
+      isCurrency?: boolean
+      isBold?: boolean
+      isMultiline?: boolean
+    }
+
     // Criar dados organizados por seções
-    const sections = [
+    const sections: { title: string; items: SectionItem[] }[] = [
       { title: 'INFORMAÇÕES BÁSICAS', items: [
         { label: 'Cliente', value: proposta.cliente || '' },
         { label: 'Produto', value: proposta.produto || '' },
@@ -839,7 +681,7 @@ export const exportService = {
           
           ws[labelCell].s = labelStyle
           
-          let cellValueStyle = { ...valueStyle }
+          let cellValueStyle: any = { ...valueStyle }
           if (item.isCurrency) {
             cellValueStyle = {
               ...cellValueStyle,
@@ -848,7 +690,11 @@ export const exportService = {
             }
           }
           if (item.isBold) {
-            cellValueStyle.font = { ...cellValueStyle.font, bold: true, color: { rgb: '4F46E5' } }
+            cellValueStyle.font = { 
+              ...cellValueStyle.font, 
+              bold: true, 
+              color: { rgb: '4F46E5' } 
+            }
           }
           
           ws[valueCell].s = cellValueStyle

@@ -1,0 +1,168 @@
+@use '../../styles/variables' as *;
+
+.page-header {
+  margin-bottom: $spacing-xl;
+
+  h1 {
+    margin-bottom: $spacing-sm;
+    font-size: 2rem;
+    color: $text-primary;
+  }
+
+  .page-subtitle {
+    color: $text-secondary;
+    font-size: 0.9375rem;
+  }
+}
+
+.propostas-aprovadas-list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.proposta-aprovada-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-lg;
+  background: $bg-primary;
+  border: 1px solid $border-light;
+  border-radius: $radius-lg;
+  transition: all $transition-base;
+
+  &:hover {
+    border-color: $primary-color;
+    box-shadow: $shadow-md;
+    transform: translateY(-2px);
+  }
+
+  .proposta-aprovada-info {
+    flex: 1;
+
+    h4 {
+      margin-bottom: $spacing-sm;
+      font-size: 1.125rem;
+      color: $text-primary;
+    }
+
+    .proposta-aprovada-produto {
+      margin-bottom: $spacing-md;
+      color: $text-secondary;
+      font-size: 0.875rem;
+    }
+
+    .proposta-aprovada-compra {
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      border: 2px solid $primary-color;
+      border-radius: $radius-md;
+      padding: $spacing-md;
+      margin-bottom: $spacing-md;
+      display: flex;
+      gap: $spacing-lg;
+
+      .compra-item {
+        display: flex;
+        flex-direction: column;
+        gap: $spacing-xs;
+        flex: 1;
+
+        .compra-label {
+          font-size: 0.75rem;
+          color: $text-secondary;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .compra-value {
+          font-size: 1.125rem;
+          color: $primary-color;
+          font-weight: 700;
+
+          &.nao-informado {
+            color: $text-secondary;
+            font-weight: 500;
+            font-style: italic;
+          }
+        }
+      }
+    }
+
+    .proposta-aprovada-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: $spacing-lg;
+      font-size: 0.8125rem;
+      color: $text-secondary;
+
+      strong {
+        color: $text-primary;
+      }
+
+      span {
+        white-space: nowrap;
+      }
+    }
+  }
+
+  .proposta-aprovada-actions {
+    display: flex;
+    gap: $spacing-md;
+    margin-left: $spacing-lg;
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: $spacing-2xl;
+
+  .empty-state-icon {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: $spacing-lg;
+  }
+
+  h3 {
+    margin-bottom: $spacing-sm;
+    color: $text-primary;
+  }
+
+  p {
+    color: $text-secondary;
+  }
+}
+
+@media (max-width: $breakpoint-md) {
+  .proposta-aprovada-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: $spacing-md;
+
+    .proposta-aprovada-actions {
+      margin-left: 0;
+      width: 100%;
+      flex-direction: column;
+
+      .btn {
+        width: 100%;
+      }
+    }
+
+    .proposta-aprovada-compra {
+      flex-direction: column;
+      gap: $spacing-md;
+
+      .compra-item {
+        width: 100%;
+      }
+    }
+
+    .proposta-aprovada-meta {
+      flex-direction: column;
+      gap: $spacing-sm;
+    }
+  }
+}
+
+
