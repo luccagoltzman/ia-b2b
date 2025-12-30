@@ -171,5 +171,50 @@ export const apiService = {
     })
     return response.data
   },
+
+  // Mercado e Benchmarks
+  async getBenchmarks(filtros?: {
+    categoria?: string
+    tipoMetrica?: string
+  }) {
+    const params = new URLSearchParams()
+    if (filtros?.categoria) {
+      params.append('categoria', filtros.categoria)
+    }
+    if (filtros?.tipoMetrica) {
+      params.append('tipoMetrica', filtros.tipoMetrica)
+    }
+    const queryString = params.toString()
+    const url = `/mercado/benchmarks${queryString ? `?${queryString}` : ''}`
+    const response = await api.get(url)
+    return response.data
+  },
+
+  async getPrecosMercado(filtros?: {
+    produto?: string
+    marca?: string
+    categoria?: string
+    regiao?: string
+  }) {
+    const params = new URLSearchParams()
+    if (filtros?.produto) params.append('produto', filtros.produto)
+    if (filtros?.marca) params.append('marca', filtros.marca)
+    if (filtros?.categoria) params.append('categoria', filtros.categoria)
+    if (filtros?.regiao) params.append('regiao', filtros.regiao)
+    const queryString = params.toString()
+    const url = `/mercado/precos${queryString ? `?${queryString}` : ''}`
+    const response = await api.get(url)
+    return response.data
+  },
+
+  async sincronizarInfoPrice(dias: number = 30) {
+    const response = await api.post('/infoprice/sincronizar/ultimos-dias', { dias })
+    return response.data
+  },
+
+  async getInfoPriceConfiguracao() {
+    const response = await api.get('/infoprice/configuracao')
+    return response.data
+  },
 }
 

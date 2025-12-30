@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import AnaliseForm from '../../components/AnaliseForm/AnaliseForm'
 import AnaliseResult from '../../components/AnaliseResult/AnaliseResult'
+import BenchmarksCard from '../../components/BenchmarksCard/BenchmarksCard'
+import InfoPriceSync from '../../components/InfoPriceSync/InfoPriceSync'
 import { apiService } from '../../services/apiService'
 import './Analises.scss'
 
@@ -16,6 +18,7 @@ const Analises = () => {
   const [analiseData, setAnaliseData] = useState<AnaliseData | null>(null)
   const [loading, setLoading] = useState(false)
   const [produtoSelecionado, setProdutoSelecionado] = useState<string | null>(null)
+  const [mostrarBenchmarks, setMostrarBenchmarks] = useState(false)
 
   useEffect(() => {
     // Se veio do Dashboard com produto selecionado, fazer análise automática
@@ -61,6 +64,11 @@ const Analises = () => {
     }
   }
 
+  const handleSincronizado = () => {
+    // Recarregar benchmarks após sincronização
+    setMostrarBenchmarks(true)
+  }
+
   return (
     <div className="analises">
       <div className="analises-header">
@@ -92,6 +100,35 @@ const Analises = () => {
             }} />
           </div>
         )}
+      </div>
+
+      <div className="analises-market-section">
+        <div className="market-sync">
+          <InfoPriceSync onSincronizado={handleSincronizado} />
+        </div>
+
+        <div className="market-benchmarks">
+          <div className="benchmarks-toggle">
+            <button
+              className="btn-toggle-benchmarks"
+              onClick={() => setMostrarBenchmarks(!mostrarBenchmarks)}
+            >
+              {mostrarBenchmarks ? 'Ocultar' : 'Mostrar'} Benchmarks do Setor
+            </button>
+          </div>
+
+          {mostrarBenchmarks && (
+            <>
+              <BenchmarksCard titulo="Benchmarks Gerais" />
+              {produtoSelecionado && (
+                <BenchmarksCard 
+                  categoria={produtoSelecionado} 
+                  titulo={`Benchmarks - ${produtoSelecionado}`}
+                />
+              )}
+            </>
+          )}
+        </div>
       </div>
     </div>
   )

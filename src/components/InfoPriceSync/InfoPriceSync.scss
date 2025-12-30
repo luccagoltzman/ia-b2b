@@ -1,0 +1,221 @@
+@use '../../styles/variables' as *;
+@use 'sass:color';
+
+.infoprice-sync {
+  background: rgba(231, 243, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(79, 70, 229, 0.2);
+  border-radius: 12px;
+  padding: 24px;
+  margin: 20px 0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+  .sync-header {
+    margin-bottom: 20px;
+
+    h3 {
+      margin: 0 0 8px 0;
+      color: $text-primary;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .text-secondary {
+      color: $text-secondary;
+      font-size: 0.875rem;
+      margin: 0;
+    }
+  }
+
+  .sync-controls {
+    display: flex;
+    gap: 16px;
+    align-items: flex-end;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      label {
+        font-weight: 500;
+        color: $text-primary;
+        font-size: 0.875rem;
+      }
+
+      input {
+        padding: 10px 12px;
+        border: 1px solid rgba(0, 0, 0, 0.2);
+        border-radius: 6px;
+        width: 120px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+
+        &:focus {
+          outline: none;
+          border-color: $primary-color;
+          box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        &:disabled {
+          background: rgba(0, 0, 0, 0.05);
+          cursor: not-allowed;
+        }
+      }
+    }
+
+    .btn-sync {
+      padding: 10px 24px;
+      background: $primary-color;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      height: fit-content;
+
+      &:hover:not(:disabled) {
+        background: color.adjust($primary-color, $lightness: -10%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(79, 70, 229, 0.3);
+      }
+
+      &:active:not(:disabled) {
+        transform: translateY(0);
+      }
+
+      &:disabled {
+        background: rgba(0, 0, 0, 0.2);
+        cursor: not-allowed;
+        opacity: 0.7;
+      }
+
+      .spinner {
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+    }
+  }
+
+  .config-warning {
+    padding: 20px;
+    text-align: center;
+    background: rgba(255, 193, 7, 0.1);
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    border-radius: 8px;
+
+    h3 {
+      margin: 0 0 12px 0;
+      color: #856404;
+    }
+
+    p {
+      margin: 0;
+      color: #856404;
+      font-size: 0.875rem;
+    }
+  }
+
+  .error-state {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 16px;
+    color: $error;
+
+    strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+  }
+
+  .resultado {
+    background: rgba(5, 150, 105, 0.1);
+    border: 1px solid rgba(5, 150, 105, 0.3);
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 16px;
+
+    h4 {
+      margin: 0 0 16px 0;
+      color: $success;
+      font-size: 1.125rem;
+      font-weight: 600;
+    }
+
+    .resultado-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+
+      @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+      }
+
+      .stat-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px;
+        background: white;
+        border-radius: 6px;
+        border: 1px solid rgba(5, 150, 105, 0.2);
+
+        .stat-label {
+          font-size: 0.875rem;
+          color: $text-secondary;
+          font-weight: 500;
+        }
+
+        .stat-value {
+          font-size: 1.125rem;
+          font-weight: 700;
+          color: $text-primary;
+
+          &.highlight {
+            color: $success;
+          }
+
+          &.error {
+            color: $error;
+          }
+        }
+      }
+    }
+
+    .resultado-mensagem {
+      margin: 0;
+      padding-top: 16px;
+      border-top: 1px solid rgba(5, 150, 105, 0.2);
+      color: $text-secondary;
+      font-size: 0.875rem;
+      line-height: 1.5;
+    }
+  }
+
+  .loading-state {
+    padding: 20px;
+    text-align: center;
+    color: $text-secondary;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
