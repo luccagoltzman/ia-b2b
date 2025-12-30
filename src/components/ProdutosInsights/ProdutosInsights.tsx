@@ -154,3 +154,4 @@ const ProdutosInsights = ({ onAnalisarProduto }: ProdutosInsightsProps) => {
 
 export default ProdutosInsights
 
+
