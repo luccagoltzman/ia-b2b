@@ -93,13 +93,17 @@ const ClienteSelecao = ({ tabela, cliente, onGerarProposta, onCancel }: ClienteS
       const produtosCompletos = tabela.produtos.filter(p => produtosSelecionados.has(p.id))
       
       // Gerar nota de retorno automaticamente (PDF e Excel)
+      // Pequeno delay para evitar bloqueio do navegador ao gerar múltiplos arquivos
       exportService.exportNotaRetornoClienteToPDF(tabela, cliente, produtosCompletos)
+      
+      // Pequeno delay antes de gerar Excel
+      await new Promise(resolve => setTimeout(resolve, 500))
       exportService.exportNotaRetornoClienteToExcel(tabela, cliente, produtosCompletos)
       
       // Gerar proposta definitiva
       await onGerarProposta(selecoes)
       
-      alert('Nota de retorno gerada e proposta criada com sucesso!')
+      // Mensagem será mostrada pelo componente pai se necessário
     } finally {
       setLoading(false)
     }

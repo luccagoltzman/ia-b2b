@@ -3,11 +3,17 @@ import { apiService } from '../../services/apiService'
 import ClienteSelecao from '../../components/ClienteSelecao/ClienteSelecao'
 import './SimularRetorno.scss'
 
+interface Cliente {
+  nome: string
+  email?: string
+  telefone?: string
+}
+
 interface TabelaProdutos {
   id: string
   nome: string
   cliente?: string
-  clientes?: string[]
+  clientes?: (string | Cliente)[]
   produtos: any[]
   condicoesPagamento?: string
   prazoEntrega?: string
@@ -45,6 +51,12 @@ const SimularRetorno = () => {
     }
   }
 
+  // Helper para extrair nome do cliente (string ou objeto)
+  const getClienteNome = (cliente: string | Cliente): string => {
+    if (typeof cliente === 'string') return cliente
+    return cliente?.nome || ''
+  }
+
   const handleSelecionarTabela = (tabela: TabelaProdutos) => {
     const clientes = tabela.clientes || (tabela.cliente ? [tabela.cliente] : [])
     
@@ -55,19 +67,20 @@ const SimularRetorno = () => {
     
     if (clientes.length === 1) {
       setTabelaSelecionada(tabela)
-      setClienteSelecionado(clientes[0])
+      setClienteSelecionado(getClienteNome(clientes[0]))
       setMostrarSelecao(true)
     } else {
       // Se houver múltiplos clientes, pedir para escolher
+      const listaClientes = clientes.map((c, i) => `${i + 1}. ${getClienteNome(c)}`).join('\n')
       const clienteEscolhido = window.prompt(
-        `Escolha o cliente para simular o retorno:\n\n${clientes.map((c: string, i: number) => `${i + 1}. ${c}`).join('\n')}\n\nDigite o número:`
+        `Escolha o cliente para simular o retorno:\n\n${listaClientes}\n\nDigite o número:`
       )
       
       if (clienteEscolhido) {
         const index = parseInt(clienteEscolhido) - 1
         if (index >= 0 && index < clientes.length) {
           setTabelaSelecionada(tabela)
-          setClienteSelecionado(clientes[index])
+          setClienteSelecionado(getClienteNome(clientes[index]))
           setMostrarSelecao(true)
         }
       }
@@ -84,7 +97,8 @@ const SimularRetorno = () => {
         selecoes
       )
       
-      alert('Nota de retorno e proposta definitiva geradas com sucesso!')
+      // A nota já foi gerada automaticamente no ClienteSelecao
+      alert('Nota de retorno (PDF e Excel) e proposta definitiva geradas com sucesso!')
       setMostrarSelecao(false)
       setTabelaSelecionada(null)
       setClienteSelecionado('')
@@ -207,11 +221,21 @@ const SimularRetorno = () => {
                       <div className="simular-retorno-clientes">
                         <span className="simular-retorno-detail-label">Clientes:</span>
                         <div className="simular-retorno-clientes-list">
-                          {tabela.clientes.map((cliente, idx) => (
-                            <span key={idx} className="simular-retorno-cliente-tag">
-                              {cliente}
-                            </span>
-                          ))}
+                          {tabela.clientes.map((cliente, idx) => {
+                            const clienteNome = getClienteNome(cliente)
+                            const clienteObj = typeof cliente === 'object' ? cliente : null
+                            return (
+                              <div key={idx} className="simular-retorno-cliente-tag">
+                                <span>{clienteNome}</span>
+                                {clienteObj && (clienteObj.email || clienteObj.telefone) && (
+                                  <div className="simular-retorno-cliente-contato">
+                                    {clienteObj.email && <span>📧</span>}
+                                    {clienteObj.telefone && <span>📱</span>}
+                                  </div>
+                                )}
+                              </div>
+                            )
+                          })}
                         </div>
                       </div>
                     )}

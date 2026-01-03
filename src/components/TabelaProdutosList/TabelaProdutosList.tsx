@@ -13,11 +13,17 @@ interface ProdutoTabela {
   aliquotaIpi?: number
 }
 
+interface Cliente {
+  nome: string
+  email?: string
+  telefone?: string
+}
+
 interface TabelaProdutos {
   id: string
   nome: string
   cliente?: string
-  clientes?: string[]
+  clientes?: (string | Cliente)[]
   produtos: ProdutoTabela[]
   condicoesPagamento?: string
   prazoEntrega?: string
@@ -50,6 +56,18 @@ const TabelaProdutosList = ({
 }: TabelaProdutosListProps) => {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-BR')
+  }
+
+  // Helper para extrair nome do cliente
+  const getClienteNome = (cliente: string | Cliente): string => {
+    if (typeof cliente === 'string') return cliente
+    return cliente?.nome || ''
+  }
+
+  // Helper para verificar se cliente tem contato
+  const clienteTemContato = (cliente: string | Cliente): boolean => {
+    if (typeof cliente === 'string') return false
+    return !!(cliente?.email || cliente?.telefone)
   }
 
   const getStatusBadge = (status?: string) => {
@@ -118,7 +136,14 @@ const TabelaProdutosList = ({
                     <strong>{tabela.nome}</strong>
                   </td>
                   <td>
-                    {clientesCount} {clientesCount === 1 ? 'cliente' : 'clientes'}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                      <span>{clientesCount} {clientesCount === 1 ? 'cliente' : 'clientes'}</span>
+                      {tabela.clientes && tabela.clientes.some(clienteTemContato) && (
+                        <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                          {tabela.clientes.filter(clienteTemContato).length} com contato
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td>{tabela.produtos.length} produtos</td>
                   <td>
@@ -199,7 +224,14 @@ const TabelaProdutosList = ({
               <div className="tabela-card-info">
                 <div className="tabela-card-info-item">
                   <span className="tabela-card-info-label">Clientes:</span>
-                  <span>{clientesCount} {clientesCount === 1 ? 'cliente' : 'clientes'}</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    <span>{clientesCount} {clientesCount === 1 ? 'cliente' : 'clientes'}</span>
+                    {tabela.clientes && tabela.clientes.some(clienteTemContato) && (
+                      <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                        {tabela.clientes.filter(clienteTemContato).length} com contato
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="tabela-card-info-item">
                   <span className="tabela-card-info-label">Produtos:</span>

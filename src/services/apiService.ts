@@ -244,7 +244,10 @@ export const apiService = {
   },
 
   async enviarTabelaParaClientes(id: string, clientes?: string[]) {
-    const response = await api.post(`/tabelas-produtos/${id}/enviar`, { clientes })
+    // Se clientes for um array vazio ou undefined, não enviar o campo
+    // para que o backend use os clientes da tabela
+    const body = clientes && clientes.length > 0 ? { clientes } : {}
+    const response = await api.post(`/tabelas-produtos/${id}/enviar`, body)
     return response.data
   },
 

@@ -16,11 +16,17 @@ interface ProdutoTabela {
   descontoTipo?: 'percentual' | 'valor'
 }
 
+interface Cliente {
+  nome: string
+  email?: string
+  telefone?: string
+}
+
 interface TabelaProdutos {
   id?: string
   nome: string
-  cliente?: string
-  clientes?: string[] // Múltiplos clientes para envio
+  cliente?: string // Compatibilidade retroativa
+  clientes?: (string | Cliente)[] // Aceita string (retrocompatibilidade) ou Cliente
   produtos: ProdutoTabela[]
   condicoesPagamento?: string
   prazoEntrega?: string
@@ -46,7 +52,11 @@ const TabelaProdutosForm = ({ tabela, onSubmit, onCancel }: TabelaProdutosFormPr
     dataVencimento: ''
   })
   const [loading, setLoading] = useState(false)
-  const [novoCliente, setNovoCliente] = useState('')
+  const [novoCliente, setNovoCliente] = useState<Cliente>({
+    nome: '',
+    email: '',
+    telefone: ''
+  })
   const [novoProduto, setNovoProduto] = useState<Partial<ProdutoTabela>>({
     produto: '',
     produtoCodigo: '',
@@ -62,17 +72,32 @@ const TabelaProdutosForm = ({ tabela, onSubmit, onCancel }: TabelaProdutosFormPr
 
   useEffect(() => {
     if (tabela) {
-      setFormData(tabela)
+      // Converter clientes string para objetos Cliente se necessário
+      const clientesConvertidos = tabela.clientes?.map(cliente => {
+        if (typeof cliente === 'string') {
+          return { nome: cliente, email: '', telefone: '' }
+        }
+        return cliente
+      }) || []
+      
+      setFormData({
+        ...tabela,
+        clientes: clientesConvertidos
+      })
     }
   }, [tabela])
 
   const handleAddCliente = () => {
-    if (novoCliente.trim()) {
+    if (novoCliente.nome.trim()) {
       setFormData(prev => ({
         ...prev,
-        clientes: [...(prev.clientes || []), novoCliente.trim()]
+        clientes: [...(prev.clientes || []), { ...novoCliente, nome: novoCliente.nome.trim() }]
       }))
-      setNovoCliente('')
+      setNovoCliente({
+        nome: '',
+        email: '',
+        telefone: ''
+      })
     }
   }
 
@@ -185,41 +210,84 @@ const TabelaProdutosForm = ({ tabela, onSubmit, onCancel }: TabelaProdutosFormPr
         <div className="tabela-form-section">
           <h4 className="tabela-form-section-title">Clientes para Envio *</h4>
           <div className="tabela-form-row">
-            <div className="tabela-form-group" style={{ flex: 1 }}>
-              <label className="tabela-form-label">Adicionar Cliente</label>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <input
-                  type="text"
-                  className="input"
-                  value={novoCliente}
-                  onChange={(e) => setNovoCliente(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddCliente())}
-                  placeholder="Nome do cliente"
-                />
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={handleAddCliente}
-                >
-                  Adicionar
-                </button>
-              </div>
+            <div className="tabela-form-group">
+              <label className="tabela-form-label">Nome do Cliente *</label>
+              <input
+                type="text"
+                className="input"
+                value={novoCliente.nome}
+                onChange={(e) => setNovoCliente({ ...novoCliente, nome: e.target.value })}
+                placeholder="Nome do cliente"
+              />
+            </div>
+            <div className="tabela-form-group">
+              <label className="tabela-form-label">Email</label>
+              <input
+                type="email"
+                className="input"
+                value={novoCliente.email || ''}
+                onChange={(e) => setNovoCliente({ ...novoCliente, email: e.target.value })}
+                placeholder="email@exemplo.com"
+              />
+            </div>
+            <div className="tabela-form-group">
+              <label className="tabela-form-label">Telefone/WhatsApp</label>
+              <input
+                type="tel"
+                className="input"
+                value={novoCliente.telefone || ''}
+                onChange={(e) => setNovoCliente({ ...novoCliente, telefone: e.target.value })}
+                placeholder="(00) 00000-0000"
+              />
+            </div>
+            <div className="tabela-form-group" style={{ display: 'flex', alignItems: 'flex-end' }}>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={handleAddCliente}
+                style={{ height: 'fit-content' }}
+              >
+                Adicionar
+              </button>
             </div>
           </div>
+          <small style={{ color: '#64748b', fontSize: '0.75rem', display: 'block', marginTop: '0.5rem' }}>
+            Email e telefone são opcionais, mas necessários para envio automático futuro via email ou WhatsApp
+          </small>
           {formData.clientes && formData.clientes.length > 0 && (
             <div className="tabela-clientes-list">
-              {formData.clientes.map((cliente, index) => (
-                <div key={index} className="tabela-cliente-item">
-                  <span>{cliente}</span>
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-danger"
-                    onClick={() => handleRemoveCliente(index)}
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
+              {formData.clientes.map((cliente, index) => {
+                const clienteObj = typeof cliente === 'string' 
+                  ? { nome: cliente, email: '', telefone: '' }
+                  : cliente
+                
+                return (
+                  <div key={index} className="tabela-cliente-item">
+                    <div className="tabela-cliente-info">
+                      <div className="tabela-cliente-nome">
+                        <strong>{clienteObj.nome}</strong>
+                      </div>
+                      {(clienteObj.email || clienteObj.telefone) && (
+                        <div className="tabela-cliente-contato">
+                          {clienteObj.email && (
+                            <span className="tabela-cliente-email">📧 {clienteObj.email}</span>
+                          )}
+                          {clienteObj.telefone && (
+                            <span className="tabela-cliente-telefone">📱 {clienteObj.telefone}</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-danger"
+                      onClick={() => handleRemoveCliente(index)}
+                    >
+                      ×
+                    </button>
+                  </div>
+                )
+              })}
             </div>
           )}
         </div>
@@ -328,7 +396,7 @@ const TabelaProdutosForm = ({ tabela, onSubmit, onCancel }: TabelaProdutosFormPr
                 />
               </div>
               <div className="tabela-form-group">
-                <label className="tabela-form-label">Desconto (interno) *</label>
+                <label className="tabela-form-label">Desconto (interno)</label>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <input
                     type="number"
@@ -351,7 +419,7 @@ const TabelaProdutosForm = ({ tabela, onSubmit, onCancel }: TabelaProdutosFormPr
                   </select>
                 </div>
                 <small style={{ color: '#64748b', fontSize: '0.75rem' }}>
-                  Este desconto não aparecerá na tabela enviada ao cliente
+                  Este desconto não aparecerá na tabela enviada ao cliente, apenas na proposta final
                 </small>
               </div>
             </div>

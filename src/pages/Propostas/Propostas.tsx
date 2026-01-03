@@ -198,7 +198,14 @@ const Propostas = () => {
 
   const handleCreateTabela = async (dados: any) => {
     try {
-      await apiService.createTabelaProdutos(dados)
+      // Converter clientes de objetos para strings (compatibilidade com backend atual)
+      const dadosParaEnvio = {
+        ...dados,
+        clientes: dados.clientes?.map((cliente: any) => 
+          typeof cliente === 'string' ? cliente : cliente.nome
+        ) || []
+      }
+      await apiService.createTabelaProdutos(dadosParaEnvio)
       await fetchTabelas()
       setShowTabelaForm(false)
     } catch (error) {
@@ -214,7 +221,14 @@ const Propostas = () => {
 
   const handleUpdateTabela = async (id: string, dados: any) => {
     try {
-      await apiService.updateTabelaProdutos(id, dados)
+      // Converter clientes de objetos para strings (compatibilidade com backend atual)
+      const dadosParaEnvio = {
+        ...dados,
+        clientes: dados.clientes?.map((cliente: any) => 
+          typeof cliente === 'string' ? cliente : cliente.nome
+        ) || []
+      }
+      await apiService.updateTabelaProdutos(id, dadosParaEnvio)
       await fetchTabelas()
       setShowTabelaForm(false)
       setEditingTabela(null)
@@ -226,36 +240,66 @@ const Propostas = () => {
 
   const handleEnviarTabela = async (tabela: any) => {
     try {
+      // Converter clientes para exibição
+      const clientesNomes = tabela.clientes?.map((c: any) => 
+        typeof c === 'string' ? c : c.nome
+      ) || []
+      const listaClientes = clientesNomes.length > 0 
+        ? clientesNomes.join(', ')
+        : tabela.cliente || 'Nenhum cliente selecionado'
+      
       const confirmacao = window.confirm(
         `Deseja enviar a tabela "${tabela.nome}" para os clientes?\n\n` +
-        `Clientes: ${tabela.clientes?.join(', ') || tabela.cliente || 'Nenhum cliente selecionado'}`
+        `Clientes: ${listaClientes}`
       )
       
       if (!confirmacao) return
 
-      await apiService.enviarTabelaParaClientes(tabela.id, tabela.clientes)
+      // Converter clientes de objetos para strings para o backend
+      const clientesParaEnvio = tabela.clientes?.map((c: any) => 
+        typeof c === 'string' ? c : c.nome
+      ) || []
+      
+      // Enviar apenas se houver clientes, senão o backend usa os da tabela
+      const clientesParaEnviar = clientesParaEnvio.length > 0 ? clientesParaEnvio : undefined
+      
+      console.log('Enviando tabela:', {
+        tabelaId: tabela.id,
+        clientesParaEnviar,
+        tabelaClientes: tabela.clientes
+      })
+      
+      await apiService.enviarTabelaParaClientes(tabela.id, clientesParaEnviar)
       
       // Gerar e baixar arquivos PDF/Excel para cada cliente
       const clientes = tabela.clientes || (tabela.cliente ? [tabela.cliente] : [])
       
       for (const cliente of clientes) {
+        const clienteNome = typeof cliente === 'string' ? cliente : cliente.nome
         // PDF
-        exportService.exportTabelaProdutosToPDF(tabela, cliente)
+        exportService.exportTabelaProdutosToPDF(tabela, clienteNome)
         // Excel
-        exportService.exportTabelaProdutosToExcel(tabela, cliente)
+        exportService.exportTabelaProdutosToExcel(tabela, clienteNome)
       }
       
       alert('Tabela enviada com sucesso! Os arquivos PDF e Excel foram gerados.')
       await fetchTabelas()
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao enviar tabela:', error)
-      alert('Erro ao enviar tabela. Tente novamente.')
+      const errorMessage = error?.response?.data?.message || error?.message || 'Erro desconhecido'
+      alert(`Erro ao enviar tabela: ${errorMessage}\n\nVerifique o console para mais detalhes.`)
     }
   }
 
   const handleSimularRetorno = (tabela: any) => {
     // Redirecionar para a página de simular retorno
     navigate('/simular-retorno')
+  }
+
+  // Helper para extrair nome do cliente (string ou objeto)
+  const getClienteNome = (cliente: any): string => {
+    if (typeof cliente === 'string') return cliente
+    return cliente?.nome || ''
   }
 
   const handleGerarProposta = async (tabela: any) => {
@@ -268,17 +312,20 @@ const Propostas = () => {
     }
     
     if (clientes.length === 1) {
-      setTabelaParaSelecao({ tabela, cliente: clientes[0] })
+      const clienteNome = getClienteNome(clientes[0])
+      setTabelaParaSelecao({ tabela, cliente: clienteNome })
       setShowClienteSelecao(true)
     } else {
+      const listaClientes = clientes.map((c: any, i: number) => `${i + 1}. ${getClienteNome(c)}`).join('\n')
       const clienteEscolhido = window.prompt(
-        `Escolha o cliente para gerar a proposta:\n\n${clientes.map((c: string, i: number) => `${i + 1}. ${c}`).join('\n')}\n\nDigite o número:`
+        `Escolha o cliente para gerar a proposta:\n\n${listaClientes}\n\nDigite o número:`
       )
       
       if (clienteEscolhido) {
         const index = parseInt(clienteEscolhido) - 1
         if (index >= 0 && index < clientes.length) {
-          setTabelaParaSelecao({ tabela, cliente: clientes[index] })
+          const clienteNome = getClienteNome(clientes[index])
+          setTabelaParaSelecao({ tabela, cliente: clienteNome })
           setShowClienteSelecao(true)
         }
       }
@@ -289,21 +336,25 @@ const Propostas = () => {
     if (!tabelaParaSelecao) return
 
     try {
+      // A nota já foi gerada automaticamente no ClienteSelecao antes de chamar esta função
       const proposta = await apiService.gerarPropostaDefinitiva(
         tabelaParaSelecao.tabela.id,
         tabelaParaSelecao.cliente,
         selecoes
       )
       
-      alert('Proposta definitiva gerada com sucesso!')
+      // Não mostrar alert aqui, pois o ClienteSelecao já mostra
       setShowClienteSelecao(false)
       setTabelaParaSelecao(null)
       await fetchTabelas()
+      
       // Opcional: redirecionar para ver a proposta gerada
       if (proposta?.id) {
-        setActiveTab('propostas')
-        await fetchPropostas()
-        // Poderia abrir a proposta gerada aqui
+        const verProposta = window.confirm('Nota de retorno e proposta geradas com sucesso! Deseja visualizar a proposta?')
+        if (verProposta) {
+          setActiveTab('propostas')
+          await fetchPropostas()
+        }
       }
     } catch (error) {
       console.error('Erro ao gerar proposta definitiva:', error)
