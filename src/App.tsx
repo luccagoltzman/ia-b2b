@@ -6,6 +6,7 @@ import Propostas from './pages/Propostas/Propostas'
 import Visitas from './pages/Visitas/Visitas'
 import PosVenda from './pages/PosVenda/PosVenda'
 import Configuracoes from './pages/Configuracoes/Configuracoes'
+import SimularRetorno from './pages/SimularRetorno/SimularRetorno'
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path="/visitas" element={<Visitas />} />
           <Route path="/pos-venda" element={<PosVenda />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
+          <Route path="/simular-retorno" element={<SimularRetorno />} />
         </Routes>
       </Layout>
     </Router>

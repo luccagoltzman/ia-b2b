@@ -737,6 +737,498 @@ export const exportService = {
     
     const fileName = `proposta_${proposta.cliente.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.xlsx`
     XLSX.writeFile(wb, fileName)
+  },
+
+  // Exportar tabela de produtos para PDF
+  exportTabelaProdutosToPDF(tabela: any, cliente?: string) {
+    const doc = new jsPDF('p', 'mm', 'a4')
+    const marginLeft = 15
+    const marginRight = 15
+    const pageWidth = doc.internal.pageSize.getWidth()
+    const contentWidth = pageWidth - marginLeft - marginRight
+    
+    // Cabeçalho
+    doc.setFillColor(79, 70, 229)
+    doc.rect(0, 0, pageWidth, 40, 'F')
+    
+    doc.setTextColor(255, 255, 255)
+    doc.setFontSize(18)
+    doc.setFont('helvetica', 'bold')
+    doc.text('TABELA DE PRODUTOS', marginLeft, 20)
+    
+    doc.setFontSize(12)
+    doc.setFont('helvetica', 'normal')
+    doc.text(tabela.nome, marginLeft, 30)
+    
+    doc.setTextColor(15, 23, 42)
+    let yPos = 50
+    
+    // Informações do Cliente (se especificado)
+    if (cliente) {
+      doc.setFontSize(10)
+      doc.setFont('helvetica', 'bold')
+      doc.text('Cliente:', marginLeft, yPos)
+      doc.setFont('helvetica', 'normal')
+      doc.text(cliente, marginLeft + 25, yPos)
+      yPos += 10
+    }
+    
+    // Data de Vencimento
+    doc.setFont('helvetica', 'bold')
+    doc.text('Válida até:', marginLeft, yPos)
+    doc.setFont('helvetica', 'normal')
+    doc.text(formatDate(tabela.dataVencimento), marginLeft + 30, yPos)
+    yPos += 10
+    
+    // Tabela de Produtos (SEM mostrar descontos - são internos)
+    yPos += 5
+    const tableData = tabela.produtos.map((produto: any, index: number) => {
+      const valorTotal = produto.valorUnitario * produto.quantidade
+      return [
+        (index + 1).toString(),
+        produto.produtoCodigo || '-',
+        produto.produto,
+        produto.marca,
+        produto.quantidade.toString(),
+        produto.unidadeMedida,
+        formatCurrency(produto.valorUnitario),
+        formatCurrency(valorTotal)
+      ]
+    })
+    
+    autoTable(doc, {
+      startY: yPos,
+      head: [['#', 'Código', 'Produto', 'Marca', 'Quantidade', 'Unidade', 'Valor Unitário', 'Valor Total']],
+      body: tableData,
+      theme: 'striped',
+      headStyles: {
+        fillColor: [79, 70, 229],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        fontSize: 9
+      },
+      bodyStyles: {
+        fontSize: 9,
+        textColor: [15, 23, 42]
+      },
+      alternateRowStyles: {
+        fillColor: [248, 250, 252]
+      },
+      margin: { left: marginLeft, right: marginRight }
+    })
+    
+    yPos = (doc as any).lastAutoTable.finalY + 15
+    
+    // Condições Comerciais
+    if (tabela.condicoesPagamento || tabela.prazoEntrega) {
+      doc.setFontSize(12)
+      doc.setFont('helvetica', 'bold')
+      doc.text('Condições Comerciais', marginLeft, yPos)
+      yPos += 8
+      
+      doc.setFontSize(10)
+      doc.setFont('helvetica', 'normal')
+      
+      if (tabela.condicoesPagamento) {
+        doc.setFont('helvetica', 'bold')
+        doc.text('Condições de Pagamento:', marginLeft, yPos)
+        doc.setFont('helvetica', 'normal')
+        doc.text(tabela.condicoesPagamento, marginLeft + 50, yPos)
+        yPos += 6
+      }
+      
+      if (tabela.prazoEntrega) {
+        doc.setFont('helvetica', 'bold')
+        doc.text('Prazo de Entrega:', marginLeft, yPos)
+        doc.setFont('helvetica', 'normal')
+        doc.text(tabela.prazoEntrega, marginLeft + 40, yPos)
+        yPos += 6
+      }
+    }
+    
+    // Observações
+    if (tabela.observacoes) {
+      yPos += 5
+      doc.setFontSize(10)
+      doc.setFont('helvetica', 'bold')
+      doc.text('Observações:', marginLeft, yPos)
+      doc.setFont('helvetica', 'normal')
+      const obsLines = doc.splitTextToSize(tabela.observacoes, contentWidth - 20)
+      doc.text(obsLines, marginLeft, yPos + 6)
+    }
+    
+    // Rodapé
+    doc.setFontSize(8)
+    doc.setTextColor(71, 85, 105)
+    doc.text(
+      `Gerado em ${new Date().toLocaleString('pt-BR')}`,
+      pageWidth / 2,
+      doc.internal.pageSize.getHeight() - 10,
+      { align: 'center' }
+    )
+    
+    const fileName = `tabela_${tabela.nome.replace(/\s+/g, '_')}_${cliente ? cliente.replace(/\s+/g, '_') + '_' : ''}${new Date().toISOString().split('T')[0]}.pdf`
+    doc.save(fileName)
+  },
+
+  // Exportar tabela de produtos para Excel
+  exportTabelaProdutosToExcel(tabela: any, cliente?: string) {
+    const wb = XLSX.utils.book_new()
+    
+    // Planilha de Produtos (SEM mostrar descontos - são internos)
+    const produtosHeaders = ['#', 'Código', 'Produto', 'Marca', 'Quantidade', 'Unidade', 'Valor Unitário', 'Valor Total']
+    const produtosData = tabela.produtos.map((produto: any, index: number) => {
+      const valorTotal = produto.valorUnitario * produto.quantidade
+      return [
+        index + 1,
+        produto.produtoCodigo || '',
+        produto.produto,
+        produto.marca,
+        produto.quantidade,
+        produto.unidadeMedida,
+        produto.valorUnitario,
+        valorTotal
+      ]
+    })
+    
+    const wsProdutos = XLSX.utils.aoa_to_sheet([produtosHeaders, ...produtosData])
+    
+    // Estilos
+    const headerStyle = {
+      font: { bold: true, color: { rgb: 'FFFFFF' }, sz: 11 },
+      fill: { fgColor: { rgb: '4F46E5' } },
+      alignment: { horizontal: 'center', vertical: 'center' },
+      border: {
+        top: { style: 'thin', color: { rgb: '4338CA' } },
+        bottom: { style: 'thin', color: { rgb: '4338CA' } },
+        left: { style: 'thin', color: { rgb: '4338CA' } },
+        right: { style: 'thin', color: { rgb: '4338CA' } }
+      }
+    }
+    
+    const cellStyle = {
+      font: { sz: 10, color: { rgb: '0F172A' } },
+      alignment: { vertical: 'center' },
+      border: {
+        top: { style: 'thin', color: { rgb: 'E2E8F0' } },
+        bottom: { style: 'thin', color: { rgb: 'E2E8F0' } },
+        left: { style: 'thin', color: { rgb: 'E2E8F0' } },
+        right: { style: 'thin', color: { rgb: 'E2E8F0' } }
+      }
+    }
+    
+    const currencyStyle = {
+      ...cellStyle,
+      numFmt: '"R$" #,##0.00',
+      alignment: { horizontal: 'right', vertical: 'center' }
+    }
+    
+    // Aplicar estilos
+    const range = XLSX.utils.decode_range(wsProdutos['!ref'] || 'A1')
+    for (let col = range.s.c; col <= range.e.c; col++) {
+      const cellAddress = XLSX.utils.encode_cell({ r: 0, c: col })
+      if (wsProdutos[cellAddress]) {
+        wsProdutos[cellAddress].s = headerStyle
+      }
+    }
+    
+    for (let row = 1; row <= produtosData.length; row++) {
+      for (let col = range.s.c; col <= range.e.c; col++) {
+        const cellAddress = XLSX.utils.encode_cell({ r: row, c: col })
+        if (!wsProdutos[cellAddress]) continue
+        
+        if (col === 6) { // Valor Unitário
+          wsProdutos[cellAddress].s = currencyStyle
+        } else if (row % 2 === 0) {
+          wsProdutos[cellAddress].s = {
+            ...cellStyle,
+            fill: { fgColor: { rgb: 'F8FAFC' } }
+          }
+        } else {
+          wsProdutos[cellAddress].s = cellStyle
+        }
+      }
+    }
+    
+    wsProdutos['!cols'] = [
+      { wch: 5 }, { wch: 15 }, { wch: 30 }, { wch: 15 },
+      { wch: 12 }, { wch: 12 }, { wch: 15 }, { wch: 15 }
+    ]
+    
+    XLSX.utils.book_append_sheet(wb, wsProdutos, 'Produtos')
+    
+    const fileName = `tabela_${tabela.nome.replace(/\s+/g, '_')}_${cliente ? cliente.replace(/\s+/g, '_') + '_' : ''}${new Date().toISOString().split('T')[0]}.xlsx`
+    XLSX.writeFile(wb, fileName)
+  },
+
+  // Gerar Nota de Retorno do Cliente (PDF)
+  exportNotaRetornoClienteToPDF(tabela: any, cliente: string, produtosSelecionados: any[]) {
+    const doc = new jsPDF('p', 'mm', 'a4')
+    const marginLeft = 15
+    const marginRight = 15
+    const pageWidth = doc.internal.pageSize.getWidth()
+    const contentWidth = pageWidth - marginLeft - marginRight
+    
+    // Cabeçalho
+    doc.setFillColor(79, 70, 229)
+    doc.rect(0, 0, pageWidth, 45, 'F')
+    
+    doc.setTextColor(255, 255, 255)
+    doc.setFontSize(20)
+    doc.setFont('helvetica', 'bold')
+    doc.text('NOTA DE RETORNO', marginLeft, 25)
+    
+    doc.setFontSize(12)
+    doc.setFont('helvetica', 'normal')
+    doc.text('Confirmação de Seleção de Produtos', marginLeft, 35)
+    
+    doc.setTextColor(15, 23, 42)
+    let yPos = 60
+    
+    // Informações do Cliente
+    doc.setFontSize(11)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Cliente:', marginLeft, yPos)
+    doc.setFont('helvetica', 'normal')
+    doc.text(cliente, marginLeft + 25, yPos)
+    yPos += 7
+    
+    doc.setFont('helvetica', 'bold')
+    doc.text('Tabela:', marginLeft, yPos)
+    doc.setFont('helvetica', 'normal')
+    doc.text(tabela.nome, marginLeft + 25, yPos)
+    yPos += 7
+    
+    doc.setFont('helvetica', 'bold')
+    doc.text('Data do Retorno:', marginLeft, yPos)
+    doc.setFont('helvetica', 'normal')
+    doc.text(new Date().toLocaleDateString('pt-BR'), marginLeft + 40, yPos)
+    yPos += 12
+    
+    // Tabela de Produtos Selecionados
+    const tableData = produtosSelecionados.map((produto: any, index: number) => {
+      const valorTotal = produto.valorUnitario * produto.quantidade
+      return [
+        (index + 1).toString(),
+        produto.produtoCodigo || '-',
+        produto.produto,
+        produto.marca,
+        produto.quantidade.toString(),
+        produto.unidadeMedida,
+        formatCurrency(produto.valorUnitario),
+        formatCurrency(valorTotal)
+      ]
+    })
+    
+    autoTable(doc, {
+      startY: yPos,
+      head: [['#', 'Código', 'Produto', 'Marca', 'Quantidade', 'Unidade', 'Valor Unitário', 'Valor Total']],
+      body: tableData,
+      theme: 'striped',
+      headStyles: {
+        fillColor: [79, 70, 229],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        fontSize: 9
+      },
+      bodyStyles: {
+        fontSize: 9,
+        textColor: [15, 23, 42]
+      },
+      alternateRowStyles: {
+        fillColor: [248, 250, 252]
+      },
+      margin: { left: marginLeft, right: marginRight }
+    })
+    
+    yPos = (doc as any).lastAutoTable.finalY + 15
+    
+    // Valor Total
+    const valorTotal = produtosSelecionados.reduce((total: number, produto: any) => {
+      let valorUnitario = produto.valorUnitario
+      
+      // Aplicar IPI
+      if (produto.aliquotaIpi) {
+        valorUnitario = valorUnitario * (1 + produto.aliquotaIpi / 100)
+      }
+      
+      // Aplicar desconto
+      if (produto.desconto) {
+        if (produto.descontoTipo === 'percentual') {
+          valorUnitario = valorUnitario * (1 - produto.desconto / 100)
+        } else {
+          valorUnitario = Math.max(0, valorUnitario - produto.desconto)
+        }
+      }
+      
+      return total + (valorUnitario * produto.quantidade)
+    }, 0)
+    
+    doc.setFontSize(12)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Valor Total:', marginLeft, yPos)
+    doc.setFont('helvetica', 'bold')
+    doc.text(formatCurrency(valorTotal), pageWidth - marginRight - 20, yPos, { align: 'right' })
+    yPos += 15
+    
+    // Observações
+    if (tabela.observacoes) {
+      doc.setFontSize(10)
+      doc.setFont('helvetica', 'bold')
+      doc.text('Observações:', marginLeft, yPos)
+      doc.setFont('helvetica', 'normal')
+      const obsLines = doc.splitTextToSize(tabela.observacoes, contentWidth - 20)
+      doc.text(obsLines, marginLeft, yPos + 6)
+      yPos += obsLines.length * 5 + 10
+    }
+    
+    // Rodapé
+    doc.setFontSize(8)
+    doc.setTextColor(71, 85, 105)
+    doc.text(
+      `Nota gerada em ${new Date().toLocaleString('pt-BR')}`,
+      pageWidth / 2,
+      doc.internal.pageSize.getHeight() - 10,
+      { align: 'center' }
+    )
+    
+    const fileName = `nota_retorno_${cliente.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`
+    doc.save(fileName)
+  },
+
+  // Gerar Nota de Retorno do Cliente (Excel)
+  exportNotaRetornoClienteToExcel(tabela: any, cliente: string, produtosSelecionados: any[]) {
+    const wb = XLSX.utils.book_new()
+    
+    // Planilha de Produtos Selecionados
+    const headers = ['#', 'Código', 'Produto', 'Marca', 'Quantidade', 'Unidade', 'Valor Unitário', 'Valor Total']
+    const data = produtosSelecionados.map((produto: any, index: number) => {
+      const valorTotal = produto.valorUnitario * produto.quantidade
+      return [
+        index + 1,
+        produto.produtoCodigo || '',
+        produto.produto,
+        produto.marca,
+        produto.quantidade,
+        produto.unidadeMedida,
+        produto.valorUnitario,
+        valorTotal
+      ]
+    })
+    
+    const ws = XLSX.utils.aoa_to_sheet([
+      ['NOTA DE RETORNO DO CLIENTE'],
+      [''],
+      ['Cliente:', cliente],
+      ['Tabela:', tabela.nome],
+      ['Data do Retorno:', new Date().toLocaleDateString('pt-BR')],
+      [''],
+      headers,
+      ...data
+    ])
+    
+    // Estilos
+    const headerStyle = {
+      font: { bold: true, color: { rgb: 'FFFFFF' }, sz: 11 },
+      fill: { fgColor: { rgb: '4F46E5' } },
+      alignment: { horizontal: 'center', vertical: 'center' },
+      border: {
+        top: { style: 'thin', color: { rgb: '4338CA' } },
+        bottom: { style: 'thin', color: { rgb: '4338CA' } },
+        left: { style: 'thin', color: { rgb: '4338CA' } },
+        right: { style: 'thin', color: { rgb: '4338CA' } }
+      }
+    }
+    
+    const cellStyle = {
+      font: { sz: 10, color: { rgb: '0F172A' } },
+      alignment: { vertical: 'center' },
+      border: {
+        top: { style: 'thin', color: { rgb: 'E2E8F0' } },
+        bottom: { style: 'thin', color: { rgb: 'E2E8F0' } },
+        left: { style: 'thin', color: { rgb: 'E2E8F0' } },
+        right: { style: 'thin', color: { rgb: 'E2E8F0' } }
+      }
+    }
+    
+    const currencyStyle = {
+      ...cellStyle,
+      numFmt: '"R$" #,##0.00',
+      alignment: { horizontal: 'right', vertical: 'center' }
+    }
+    
+    // Aplicar estilos ao título
+    ws['A1'].s = {
+      font: { bold: true, sz: 16, color: { rgb: '4F46E5' } },
+      alignment: { horizontal: 'center', vertical: 'center' }
+    }
+    ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 7 } }]
+    
+    // Aplicar estilos ao cabeçalho da tabela
+    const headerRow = 6
+    for (let col = 0; col < headers.length; col++) {
+      const cellAddress = XLSX.utils.encode_cell({ r: headerRow, c: col })
+      if (ws[cellAddress]) {
+        ws[cellAddress].s = headerStyle
+      }
+    }
+    
+    // Aplicar estilos aos dados
+    for (let row = 1; row <= data.length; row++) {
+      for (let col = 0; col < headers.length; col++) {
+        const cellAddress = XLSX.utils.encode_cell({ r: headerRow + row, c: col })
+        if (!ws[cellAddress]) continue
+        
+        if (col === 6 || col === 7) { // Valor Unitário e Valor Total
+          ws[cellAddress].s = currencyStyle
+        } else if (row % 2 === 0) {
+          ws[cellAddress].s = {
+            ...cellStyle,
+            fill: { fgColor: { rgb: 'F8FAFC' } }
+          }
+        } else {
+          ws[cellAddress].s = cellStyle
+        }
+      }
+    }
+    
+    // Calcular e adicionar valor total
+    const valorTotal = produtosSelecionados.reduce((total: number, produto: any) => {
+      let valorUnitario = produto.valorUnitario
+      if (produto.aliquotaIpi) {
+        valorUnitario = valorUnitario * (1 + produto.aliquotaIpi / 100)
+      }
+      if (produto.desconto) {
+        if (produto.descontoTipo === 'percentual') {
+          valorUnitario = valorUnitario * (1 - produto.desconto / 100)
+        } else {
+          valorUnitario = Math.max(0, valorUnitario - produto.desconto)
+        }
+      }
+      return total + (valorUnitario * produto.quantidade)
+    }, 0)
+    
+    const totalRow = headerRow + data.length + 2
+    ws[XLSX.utils.encode_cell({ r: totalRow, c: 6 })] = { v: 'Valor Total:', t: 's' }
+    ws[XLSX.utils.encode_cell({ r: totalRow, c: 7 })] = { v: valorTotal, t: 'n' }
+    ws[XLSX.utils.encode_cell({ r: totalRow, c: 6 })].s = {
+      font: { bold: true, sz: 11, color: { rgb: '4F46E5' } },
+      alignment: { horizontal: 'right', vertical: 'center' }
+    }
+    ws[XLSX.utils.encode_cell({ r: totalRow, c: 7 })].s = {
+      ...currencyStyle,
+      font: { bold: true, sz: 12, color: { rgb: '4F46E5' } }
+    }
+    
+    ws['!cols'] = [
+      { wch: 5 }, { wch: 15 }, { wch: 30 }, { wch: 15 },
+      { wch: 12 }, { wch: 12 }, { wch: 15 }, { wch: 15 }
+    ]
+    
+    XLSX.utils.book_append_sheet(wb, ws, 'Nota de Retorno')
+    
+    const fileName = `nota_retorno_${cliente.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.xlsx`
+    XLSX.writeFile(wb, fileName)
   }
 }
 

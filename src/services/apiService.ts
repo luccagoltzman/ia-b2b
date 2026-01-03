@@ -216,5 +216,44 @@ export const apiService = {
     const response = await api.get('/infoprice/configuracao')
     return response.data
   },
+
+  // Tabelas de Produtos
+  async getTabelasProdutos() {
+    const response = await api.get('/tabelas-produtos')
+    return response.data
+  },
+
+  async getTabelaProdutosDetalhes(id: string) {
+    const response = await api.get(`/tabelas-produtos/${id}`)
+    return response.data
+  },
+
+  async createTabelaProdutos(dados: any) {
+    const response = await api.post('/tabelas-produtos', dados)
+    return response.data
+  },
+
+  async updateTabelaProdutos(id: string, dados: any) {
+    const response = await api.put(`/tabelas-produtos/${id}`, dados)
+    return response.data
+  },
+
+  async deleteTabelaProdutos(id: string) {
+    const response = await api.delete(`/tabelas-produtos/${id}`)
+    return response.data
+  },
+
+  async enviarTabelaParaClientes(id: string, clientes?: string[]) {
+    const response = await api.post(`/tabelas-produtos/${id}/enviar`, { clientes })
+    return response.data
+  },
+
+  async gerarPropostaDefinitiva(tabelaId: string, cliente: string, selecoes: any[]) {
+    const response = await api.post(`/tabelas-produtos/${tabelaId}/gerar-proposta`, {
+      cliente,
+      selecoes
+    })
+    return response.data
+  },
 }
 

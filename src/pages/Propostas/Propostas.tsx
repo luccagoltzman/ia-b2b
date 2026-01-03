@@ -1,8 +1,13 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import PropostaForm from '../../components/PropostaForm/PropostaForm'
 import PropostaList from '../../components/PropostaList/PropostaList'
 import PropostaDetail from '../../components/PropostaDetail/PropostaDetail'
+import TabelaProdutosForm from '../../components/TabelaProdutosForm/TabelaProdutosForm'
+import TabelaProdutosList from '../../components/TabelaProdutosList/TabelaProdutosList'
+import ClienteSelecao from '../../components/ClienteSelecao/ClienteSelecao'
 import { apiService } from '../../services/apiService'
+import { exportService } from '../../services/exportService'
 import './Propostas.scss'
 
 interface Checkpoint {
@@ -60,15 +65,32 @@ interface Proposta {
 }
 
 const Propostas = () => {
+  const navigate = useNavigate()
+  const [activeTab, setActiveTab] = useState<'propostas' | 'tabelas'>('tabelas')
+  
+  // Estados para Propostas
   const [propostas, setPropostas] = useState<Proposta[]>([])
   const [showForm, setShowForm] = useState(false)
   const [loading, setLoading] = useState(true)
   const [editingProposta, setEditingProposta] = useState<Proposta | null>(null)
   const [viewingProposta, setViewingProposta] = useState<Proposta | null>(null)
+  
+  // Estados para Tabelas
+  const [tabelas, setTabelas] = useState<any[]>([])
+  const [showTabelaForm, setShowTabelaForm] = useState(false)
+  const [loadingTabelas, setLoadingTabelas] = useState(true)
+  const [editingTabela, setEditingTabela] = useState<any | null>(null)
+  const [viewingTabela, setViewingTabela] = useState<any | null>(null)
+  const [showClienteSelecao, setShowClienteSelecao] = useState(false)
+  const [tabelaParaSelecao, setTabelaParaSelecao] = useState<{ tabela: any; cliente: string } | null>(null)
 
   useEffect(() => {
-    fetchPropostas()
-  }, [])
+    if (activeTab === 'propostas') {
+      fetchPropostas()
+    } else {
+      fetchTabelas()
+    }
+  }, [activeTab])
 
   const fetchPropostas = async () => {
     try {
@@ -161,67 +183,268 @@ const Propostas = () => {
     }
   }
 
+  // Funções para Tabelas
+  const fetchTabelas = async () => {
+    try {
+      setLoadingTabelas(true)
+      const data = await apiService.getTabelasProdutos()
+      setTabelas(data)
+    } catch (error) {
+      console.error('Erro ao carregar tabelas:', error)
+    } finally {
+      setLoadingTabelas(false)
+    }
+  }
+
+  const handleCreateTabela = async (dados: any) => {
+    try {
+      await apiService.createTabelaProdutos(dados)
+      await fetchTabelas()
+      setShowTabelaForm(false)
+    } catch (error) {
+      console.error('Erro ao criar tabela:', error)
+      alert('Erro ao criar tabela. Tente novamente.')
+    }
+  }
+
+  const handleEditTabela = (tabela: any) => {
+    setEditingTabela(tabela)
+    setShowTabelaForm(true)
+  }
+
+  const handleUpdateTabela = async (id: string, dados: any) => {
+    try {
+      await apiService.updateTabelaProdutos(id, dados)
+      await fetchTabelas()
+      setShowTabelaForm(false)
+      setEditingTabela(null)
+    } catch (error) {
+      console.error('Erro ao atualizar tabela:', error)
+      alert('Erro ao atualizar tabela. Tente novamente.')
+    }
+  }
+
+  const handleEnviarTabela = async (tabela: any) => {
+    try {
+      const confirmacao = window.confirm(
+        `Deseja enviar a tabela "${tabela.nome}" para os clientes?\n\n` +
+        `Clientes: ${tabela.clientes?.join(', ') || tabela.cliente || 'Nenhum cliente selecionado'}`
+      )
+      
+      if (!confirmacao) return
+
+      await apiService.enviarTabelaParaClientes(tabela.id, tabela.clientes)
+      
+      // Gerar e baixar arquivos PDF/Excel para cada cliente
+      const clientes = tabela.clientes || (tabela.cliente ? [tabela.cliente] : [])
+      
+      for (const cliente of clientes) {
+        // PDF
+        exportService.exportTabelaProdutosToPDF(tabela, cliente)
+        // Excel
+        exportService.exportTabelaProdutosToExcel(tabela, cliente)
+      }
+      
+      alert('Tabela enviada com sucesso! Os arquivos PDF e Excel foram gerados.')
+      await fetchTabelas()
+    } catch (error) {
+      console.error('Erro ao enviar tabela:', error)
+      alert('Erro ao enviar tabela. Tente novamente.')
+    }
+  }
+
+  const handleSimularRetorno = (tabela: any) => {
+    // Redirecionar para a página de simular retorno
+    navigate('/simular-retorno')
+  }
+
+  const handleGerarProposta = async (tabela: any) => {
+    // Mostrar seleção de cliente se houver múltiplos clientes
+    const clientes = tabela.clientes || (tabela.cliente ? [tabela.cliente] : [])
+    
+    if (clientes.length === 0) {
+      alert('Nenhum cliente associado a esta tabela.')
+      return
+    }
+    
+    if (clientes.length === 1) {
+      setTabelaParaSelecao({ tabela, cliente: clientes[0] })
+      setShowClienteSelecao(true)
+    } else {
+      const clienteEscolhido = window.prompt(
+        `Escolha o cliente para gerar a proposta:\n\n${clientes.map((c: string, i: number) => `${i + 1}. ${c}`).join('\n')}\n\nDigite o número:`
+      )
+      
+      if (clienteEscolhido) {
+        const index = parseInt(clienteEscolhido) - 1
+        if (index >= 0 && index < clientes.length) {
+          setTabelaParaSelecao({ tabela, cliente: clientes[index] })
+          setShowClienteSelecao(true)
+        }
+      }
+    }
+  }
+
+  const handleGerarPropostaDefinitiva = async (selecoes: any[]) => {
+    if (!tabelaParaSelecao) return
+
+    try {
+      const proposta = await apiService.gerarPropostaDefinitiva(
+        tabelaParaSelecao.tabela.id,
+        tabelaParaSelecao.cliente,
+        selecoes
+      )
+      
+      alert('Proposta definitiva gerada com sucesso!')
+      setShowClienteSelecao(false)
+      setTabelaParaSelecao(null)
+      await fetchTabelas()
+      // Opcional: redirecionar para ver a proposta gerada
+      if (proposta?.id) {
+        setActiveTab('propostas')
+        await fetchPropostas()
+        // Poderia abrir a proposta gerada aqui
+      }
+    } catch (error) {
+      console.error('Erro ao gerar proposta definitiva:', error)
+      alert('Erro ao gerar proposta definitiva. Tente novamente.')
+    }
+  }
+
   return (
     <div className="propostas">
       <div className="propostas-header">
         <div>
           <h2>Propostas Comerciais</h2>
           <p className="text-secondary">
-            Gerencie suas propostas com ajuda da IA
+            {activeTab === 'tabelas' 
+              ? 'Crie tabelas de produtos e gere propostas automaticamente'
+              : 'Gerencie suas propostas com ajuda da IA'}
           </p>
         </div>
-        {!showForm && (
-          <button
-            className="btn btn-primary"
-            onClick={() => {
-              setEditingProposta(null)
-              setShowForm(true)
-            }}
-          >
-            + Nova Proposta
-          </button>
-        )}
+        <div className="propostas-header-actions">
+          <div className="propostas-tabs">
+            <button
+              className={`propostas-tab ${activeTab === 'tabelas' ? 'active' : ''}`}
+              onClick={() => setActiveTab('tabelas')}
+            >
+              📊 Tabelas de Produtos
+            </button>
+            <button
+              className={`propostas-tab ${activeTab === 'propostas' ? 'active' : ''}`}
+              onClick={() => setActiveTab('propostas')}
+            >
+              📝 Propostas
+            </button>
+          </div>
+          {activeTab === 'tabelas' && !showTabelaForm && (
+            <button
+              className="btn btn-primary"
+              onClick={() => {
+                setEditingTabela(null)
+                setShowTabelaForm(true)
+              }}
+            >
+              + Nova Tabela
+            </button>
+          )}
+          {activeTab === 'propostas' && !showForm && (
+            <button
+              className="btn btn-primary"
+              onClick={() => {
+                setEditingProposta(null)
+                setShowForm(true)
+              }}
+            >
+              + Nova Proposta
+            </button>
+          )}
+        </div>
       </div>
 
-      {showForm ? (
-        <div className="propostas-form-section">
-          <PropostaForm
-            proposta={editingProposta}
-            onSubmit={editingProposta ? 
-              (dados) => handleUpdateProposta(editingProposta.id, dados) :
-              handleCreateProposta
-            }
-            onCancel={() => {
-              setShowForm(false)
-              setEditingProposta(null)
-            }}
-          />
-        </div>
+      {activeTab === 'tabelas' ? (
+        <>
+          {showTabelaForm ? (
+            <div className="propostas-form-section">
+              <TabelaProdutosForm
+                tabela={editingTabela}
+                onSubmit={editingTabela ? 
+                  (dados) => handleUpdateTabela(editingTabela.id, dados) :
+                  handleCreateTabela
+                }
+                onCancel={() => {
+                  setShowTabelaForm(false)
+                  setEditingTabela(null)
+                }}
+              />
+            </div>
+          ) : showClienteSelecao && tabelaParaSelecao ? (
+            <ClienteSelecao
+              tabela={tabelaParaSelecao.tabela}
+              cliente={tabelaParaSelecao.cliente}
+              onGerarProposta={handleGerarPropostaDefinitiva}
+              onCancel={() => {
+                setShowClienteSelecao(false)
+                setTabelaParaSelecao(null)
+              }}
+            />
+          ) : (
+            <div className="propostas-list-section">
+              <TabelaProdutosList
+                tabelas={tabelas}
+                loading={loadingTabelas}
+                onEdit={handleEditTabela}
+                onEnviar={handleEnviarTabela}
+                onGerarProposta={handleGerarProposta}
+                onSimularRetorno={handleSimularRetorno}
+                onRefresh={fetchTabelas}
+              />
+            </div>
+          )}
+        </>
       ) : (
-        <div className="propostas-list-section">
-          <PropostaList
-            propostas={propostas}
-            loading={loading}
-            onEdit={handleEditProposta}
-            onView={handleViewProposta}
-            onRefresh={fetchPropostas}
-          />
-        </div>
-      )}
+        <>
+          {showForm ? (
+            <div className="propostas-form-section">
+              <PropostaForm
+                proposta={editingProposta}
+                onSubmit={editingProposta ? 
+                  (dados) => handleUpdateProposta(editingProposta.id, dados) :
+                  handleCreateProposta
+                }
+                onCancel={() => {
+                  setShowForm(false)
+                  setEditingProposta(null)
+                }}
+              />
+            </div>
+          ) : (
+            <div className="propostas-list-section">
+              <PropostaList
+                propostas={propostas}
+                loading={loading}
+                onEdit={handleEditProposta}
+                onView={handleViewProposta}
+                onRefresh={fetchPropostas}
+              />
+            </div>
+          )}
 
-      {viewingProposta && (
-        <PropostaDetail
-          proposta={viewingProposta}
-          onClose={() => setViewingProposta(null)}
-          onEdit={() => {
-            setViewingProposta(null)
-            setEditingProposta(viewingProposta)
-            setShowForm(true)
-          }}
-          onUpdateStatus={(status, descricao) => 
-            handleUpdateStatus(viewingProposta.id, status, descricao)
-          }
-        />
+          {viewingProposta && (
+            <PropostaDetail
+              proposta={viewingProposta}
+              onClose={() => setViewingProposta(null)}
+              onEdit={() => {
+                setViewingProposta(null)
+                setEditingProposta(viewingProposta)
+                setShowForm(true)
+              }}
+              onUpdateStatus={(status, descricao) => 
+                handleUpdateStatus(viewingProposta.id, status, descricao)
+              }
+            />
+          )}
+        </>
       )}
     </div>
   )

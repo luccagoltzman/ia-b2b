@@ -12,6 +12,12 @@ const QuickActions = () => {
       color: 'primary'
     },
     {
+      label: 'Simular Retorno',
+      icon: '🔄',
+      action: () => navigate('/simular-retorno'),
+      color: 'success'
+    },
+    {
       label: 'Agendar Visita',
       icon: '📍',
       action: () => navigate('/visitas?new=true'),
