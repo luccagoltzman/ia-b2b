@@ -21,11 +21,17 @@ interface ProdutoSelecionado {
   produtoId: string
 }
 
+interface ClienteInfo {
+  nome: string
+  email?: string
+  telefone?: string
+}
+
 interface TabelaProdutos {
   id: string
   nome: string
   cliente?: string
-  clientes?: string[]
+  clientes?: (string | ClienteInfo)[]
   produtos: ProdutoTabela[]
   condicoesPagamento?: string
   prazoEntrega?: string
@@ -91,10 +97,13 @@ const ClienteSelecao = ({ tabela, cliente, onGerarProposta, onCancel }: ClienteS
       
       // Obter os produtos selecionados completos
       const produtosCompletos = tabela.produtos.filter(p => produtosSelecionados.has(p.id))
-      
-      // Gerar nota de retorno automaticamente (PDF e Excel)
-      // Pequeno delay para evitar bloqueio do navegador ao gerar múltiplos arquivos
-      exportService.exportNotaRetornoClienteToPDF(tabela, cliente, produtosCompletos)
+      const clientInfo = tabela.clientes
+        ?.map(c => (typeof c === 'string' ? { nome: c } : c))
+        ?.find(c => c.nome === cliente)
+      const pdfClientInfo = clientInfo && typeof clientInfo !== 'string'
+        ? { email: (clientInfo as ClienteInfo).email, telefone: (clientInfo as ClienteInfo).telefone }
+        : undefined
+      exportService.exportNotaRetornoClienteToPDF(tabela, cliente, produtosCompletos, pdfClientInfo)
       
       // Pequeno delay antes de gerar Excel
       await new Promise(resolve => setTimeout(resolve, 500))
@@ -123,18 +132,28 @@ const ClienteSelecao = ({ tabela, cliente, onGerarProposta, onCancel }: ClienteS
 
   return (
     <div className="cliente-selecao">
-      <div className="card">
+      <div className="card cliente-selecao-card">
         <div className="card-header">
-          <h3 className="card-title">Seleção de Produtos - {cliente}</h3>
-          <p className="text-secondary">Tabela: {tabela.nome}</p>
-          <p className="text-secondary" style={{ fontSize: '0.875rem', marginTop: '0.5rem' }}>
-            Marque os produtos que deseja. Ao confirmar, será gerada automaticamente a nota de retorno e a proposta definitiva.
+          <div className="cliente-selecao-progress">
+            <span className="cliente-selecao-progress-text">
+              {produtosMarcados.length} de {tabela.produtos.length} produtos selecionados
+            </span>
+            <div className="cliente-selecao-progress-bar">
+              <div
+                className="cliente-selecao-progress-fill"
+                style={{ width: `${tabela.produtos.length ? (produtosMarcados.length / tabela.produtos.length) * 100 : 0}%` }}
+              />
+            </div>
+          </div>
+          <h3 className="card-title">Seleção de produtos</h3>
+          <p className="text-secondary">Cliente: {cliente} · Tabela: {tabela.nome}</p>
+          <p className="cliente-selecao-hint">
+            Marque os itens desejados. Ao confirmar, a nota de retorno e a proposta serão geradas automaticamente.
           </p>
         </div>
 
         <div className="cliente-selecao-content">
           <div className="cliente-selecao-produtos">
-            <h4>Produtos Disponíveis</h4>
             <table className="cliente-selecao-table">
               <thead>
                 <tr>
@@ -179,39 +198,32 @@ const ClienteSelecao = ({ tabela, cliente, onGerarProposta, onCancel }: ClienteS
 
           <div className="cliente-selecao-resumo">
             <div className="cliente-selecao-resumo-card">
-              <h4>Resumo da Seleção</h4>
+              <h4>Resumo</h4>
               <div className="cliente-selecao-resumo-item">
-                <span>Produtos Selecionados:</span>
+                <span>Itens selecionados</span>
                 <strong>{produtosMarcados.length}</strong>
               </div>
-              <div className="cliente-selecao-resumo-item">
-                <span>Valor Total (com descontos aplicados):</span>
+              <div className="cliente-selecao-resumo-item cliente-selecao-resumo-total">
+                <span>Valor total</span>
                 <strong className="valor-total">{formatCurrency(valorTotal)}</strong>
               </div>
-              <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '1rem', fontStyle: 'italic' }}>
-                * Os descontos são aplicados automaticamente na geração da proposta<br/>
-                * A nota de retorno será gerada automaticamente em PDF e Excel
+              <p className="cliente-selecao-resumo-note">
+                Nota de retorno (PDF/Excel) e proposta serão geradas ao confirmar.
               </p>
+              <div className="cliente-selecao-actions">
+                <button type="button" className="btn btn-secondary" onClick={onCancel} disabled={loading}>
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={handleGerarProposta}
+                  disabled={loading || produtosMarcados.length === 0}
+                >
+                  {loading ? 'Gerando...' : 'Confirmar e gerar documentos'}
+                </button>
+              </div>
             </div>
-          </div>
-
-          <div className="cliente-selecao-actions">
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={onCancel}
-              disabled={loading}
-            >
-              Cancelar
-            </button>
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={handleGerarProposta}
-              disabled={loading || produtosMarcados.length === 0}
-            >
-              {loading ? 'Gerando Nota e Proposta...' : 'Confirmar Seleção e Gerar Nota'}
-            </button>
           </div>
         </div>
       </div>

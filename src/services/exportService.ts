@@ -89,6 +89,76 @@ const getStatusLabel = (status: string) => {
   return statusMap[status] || status
 }
 
+// Cores para documentos comerciais (visual formal)
+const DOC = {
+  headerBg: [15, 23, 42] as [number, number, number],      // #0f172a navy
+  headerAccent: [30, 58, 138] as [number, number, number], // #1e3a8a
+  textPrimary: [15, 23, 42] as [number, number, number],
+  textSecondary: [71, 85, 105] as [number, number, number],
+  border: [226, 232, 240] as [number, number, number],
+  rowAlt: [248, 250, 252] as [number, number, number],
+  margin: 18,
+  fontTitle: 16,
+  fontSubtitle: 11,
+  fontSmall: 9
+}
+
+function addDocumentHeader(doc: jsPDF, title: string, subtitle: string, docRef?: string) {
+  const pageWidth = doc.internal.pageSize.getWidth()
+  doc.setFillColor(...DOC.headerBg)
+  doc.rect(0, 0, pageWidth, 36, 'F')
+  doc.setTextColor(255, 255, 255)
+  doc.setFontSize(DOC.fontTitle)
+  doc.setFont('helvetica', 'bold')
+  doc.text(title, DOC.margin, 14)
+  doc.setFontSize(10)
+  doc.setFont('helvetica', 'normal')
+  doc.text(subtitle, DOC.margin, 22)
+  if (docRef) {
+    doc.setFontSize(9)
+    doc.text(`Ref: ${docRef}`, pageWidth - DOC.margin, 14, { align: 'right' })
+    doc.text(`Emissão: ${new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })}`, pageWidth - DOC.margin, 22, { align: 'right' })
+  }
+  doc.setTextColor(...DOC.textPrimary)
+}
+
+function addClientBlock(doc: jsPDF, cliente: string, clientInfo?: { email?: string; telefone?: string }) {
+  const pageWidth = doc.internal.pageSize.getWidth()
+  const contentWidth = pageWidth - DOC.margin * 2
+  doc.setDrawColor(...DOC.border)
+  doc.setLineWidth(0.5)
+  doc.rect(DOC.margin, 42, contentWidth, clientInfo?.email || clientInfo?.telefone ? 32 : 22, 'S')
+  doc.setFontSize(10)
+  doc.setFont('helvetica', 'bold')
+  doc.setTextColor(...DOC.textSecondary)
+  doc.text('DESTINATÁRIO / CLIENTE', DOC.margin + 4, 50)
+  doc.setTextColor(...DOC.textPrimary)
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(11)
+  doc.text(cliente, DOC.margin + 8, 58)
+  let y = 65
+  if (clientInfo?.email) {
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(9)
+    doc.setTextColor(...DOC.textSecondary)
+    doc.text(`E-mail: ${clientInfo.email}`, DOC.margin + 8, y)
+    y += 6
+  }
+  if (clientInfo?.telefone) {
+    doc.text(`Telefone / WhatsApp: ${clientInfo.telefone}`, DOC.margin + 8, y)
+  }
+  doc.setTextColor(...DOC.textPrimary)
+}
+
+function addDocumentFooter(doc: jsPDF, text: string) {
+  const pageWidth = doc.internal.pageSize.getWidth()
+  const pageHeight = doc.internal.pageSize.getHeight()
+  doc.setFontSize(8)
+  doc.setTextColor(...DOC.textSecondary)
+  doc.text(text, pageWidth / 2, pageHeight - 10, { align: 'center' })
+  doc.text(`Documento gerado em ${new Date().toLocaleString('pt-BR')}`, pageWidth / 2, pageHeight - 6, { align: 'center' })
+}
+
 export const exportService = {
   // Exportar lista de propostas para PDF
   exportPropostasToPDF(propostas: Proposta[]) {
@@ -739,49 +809,29 @@ export const exportService = {
     XLSX.writeFile(wb, fileName)
   },
 
-  // Exportar tabela de produtos para PDF
-  exportTabelaProdutosToPDF(tabela: any, cliente?: string) {
+  // Exportar tabela de produtos para PDF (formato comercial com dados do cliente)
+  exportTabelaProdutosToPDF(tabela: any, cliente?: string, clientInfo?: { email?: string; telefone?: string }) {
     const doc = new jsPDF('p', 'mm', 'a4')
-    const marginLeft = 15
-    const marginRight = 15
+    const marginLeft = DOC.margin
+    const marginRight = DOC.margin
     const pageWidth = doc.internal.pageSize.getWidth()
     const contentWidth = pageWidth - marginLeft - marginRight
-    
-    // Cabeçalho
-    doc.setFillColor(79, 70, 229)
-    doc.rect(0, 0, pageWidth, 40, 'F')
-    
-    doc.setTextColor(255, 255, 255)
-    doc.setFontSize(18)
-    doc.setFont('helvetica', 'bold')
-    doc.text('TABELA DE PRODUTOS', marginLeft, 20)
-    
-    doc.setFontSize(12)
-    doc.setFont('helvetica', 'normal')
-    doc.text(tabela.nome, marginLeft, 30)
-    
-    doc.setTextColor(15, 23, 42)
-    let yPos = 50
-    
-    // Informações do Cliente (se especificado)
+    const docRef = `TAB-${tabela.id?.substring(0, 8).toUpperCase() || new Date().getTime()}`
+
+    addDocumentHeader(doc, 'TABELA DE PRODUTOS', tabela.nome, docRef)
+
     if (cliente) {
-      doc.setFontSize(10)
-      doc.setFont('helvetica', 'bold')
-      doc.text('Cliente:', marginLeft, yPos)
-      doc.setFont('helvetica', 'normal')
-      doc.text(cliente, marginLeft + 25, yPos)
-      yPos += 10
+      addClientBlock(doc, cliente, clientInfo)
     }
-    
-    // Data de Vencimento
+
+    let yPos = cliente ? 78 : 48
+    doc.setFontSize(DOC.fontSmall)
     doc.setFont('helvetica', 'bold')
-    doc.text('Válida até:', marginLeft, yPos)
+    doc.text('Validade:', marginLeft, yPos)
     doc.setFont('helvetica', 'normal')
-    doc.text(formatDate(tabela.dataVencimento), marginLeft + 30, yPos)
+    doc.text(formatDate(tabela.dataVencimento), marginLeft + 22, yPos)
     yPos += 10
-    
-    // Tabela de Produtos (SEM mostrar descontos - são internos)
-    yPos += 5
+
     const tableData = tabela.produtos.map((produto: any, index: number) => {
       const valorTotal = produto.valorUnitario * produto.quantidade
       return [
@@ -795,78 +845,54 @@ export const exportService = {
         formatCurrency(valorTotal)
       ]
     })
-    
+
     autoTable(doc, {
       startY: yPos,
-      head: [['#', 'Código', 'Produto', 'Marca', 'Quantidade', 'Unidade', 'Valor Unitário', 'Valor Total']],
+      head: [['#', 'Código', 'Produto', 'Marca', 'Quantidade', 'Unidade', 'Valor Unit.', 'Valor Total']],
       body: tableData,
       theme: 'striped',
       headStyles: {
-        fillColor: [79, 70, 229],
+        fillColor: DOC.headerBg,
         textColor: [255, 255, 255],
         fontStyle: 'bold',
         fontSize: 9
       },
-      bodyStyles: {
-        fontSize: 9,
-        textColor: [15, 23, 42]
-      },
-      alternateRowStyles: {
-        fillColor: [248, 250, 252]
-      },
+      bodyStyles: { fontSize: 9, textColor: DOC.textPrimary },
+      alternateRowStyles: { fillColor: DOC.rowAlt },
+      styles: { cellPadding: 3, lineColor: DOC.border, lineWidth: 0.3 },
       margin: { left: marginLeft, right: marginRight }
     })
-    
-    yPos = (doc as any).lastAutoTable.finalY + 15
-    
-    // Condições Comerciais
+
+    yPos = (doc as any).lastAutoTable.finalY + 14
+
     if (tabela.condicoesPagamento || tabela.prazoEntrega) {
-      doc.setFontSize(12)
-      doc.setFont('helvetica', 'bold')
-      doc.text('Condições Comerciais', marginLeft, yPos)
-      yPos += 8
-      
+      doc.setDrawColor(...DOC.border)
+      doc.rect(marginLeft, yPos - 4, contentWidth, 24, 'S')
       doc.setFontSize(10)
+      doc.setFont('helvetica', 'bold')
+      doc.setTextColor(...DOC.textSecondary)
+      doc.text('CONDIÇÕES COMERCIAIS', marginLeft + 4, yPos + 2)
       doc.setFont('helvetica', 'normal')
-      
+      doc.setTextColor(...DOC.textPrimary)
       if (tabela.condicoesPagamento) {
-        doc.setFont('helvetica', 'bold')
-        doc.text('Condições de Pagamento:', marginLeft, yPos)
-        doc.setFont('helvetica', 'normal')
-        doc.text(tabela.condicoesPagamento, marginLeft + 50, yPos)
-        yPos += 6
+        doc.text(`Pagamento: ${tabela.condicoesPagamento}`, marginLeft + 8, yPos + 9)
       }
-      
       if (tabela.prazoEntrega) {
-        doc.setFont('helvetica', 'bold')
-        doc.text('Prazo de Entrega:', marginLeft, yPos)
-        doc.setFont('helvetica', 'normal')
-        doc.text(tabela.prazoEntrega, marginLeft + 40, yPos)
-        yPos += 6
+        doc.text(`Entrega: ${tabela.prazoEntrega}`, marginLeft + 8, yPos + 16)
       }
+      yPos += 28
     }
-    
-    // Observações
+
     if (tabela.observacoes) {
-      yPos += 5
-      doc.setFontSize(10)
       doc.setFont('helvetica', 'bold')
+      doc.setFontSize(9)
       doc.text('Observações:', marginLeft, yPos)
       doc.setFont('helvetica', 'normal')
       const obsLines = doc.splitTextToSize(tabela.observacoes, contentWidth - 20)
       doc.text(obsLines, marginLeft, yPos + 6)
     }
-    
-    // Rodapé
-    doc.setFontSize(8)
-    doc.setTextColor(71, 85, 105)
-    doc.text(
-      `Gerado em ${new Date().toLocaleString('pt-BR')}`,
-      pageWidth / 2,
-      doc.internal.pageSize.getHeight() - 10,
-      { align: 'center' }
-    )
-    
+
+    addDocumentFooter(doc, 'Documento comercial · Uso confidencial')
     const fileName = `tabela_${tabela.nome.replace(/\s+/g, '_')}_${cliente ? cliente.replace(/\s+/g, '_') + '_' : ''}${new Date().toISOString().split('T')[0]}.pdf`
     doc.save(fileName)
   },
@@ -961,51 +987,36 @@ export const exportService = {
     XLSX.writeFile(wb, fileName)
   },
 
-  // Gerar Nota de Retorno do Cliente (PDF)
-  exportNotaRetornoClienteToPDF(tabela: any, cliente: string, produtosSelecionados: any[]) {
+  // Gerar Nota de Retorno do Cliente (PDF comercial com dados do cliente)
+  exportNotaRetornoClienteToPDF(
+    tabela: any,
+    cliente: string,
+    produtosSelecionados: any[],
+    clientInfo?: { email?: string; telefone?: string }
+  ) {
     const doc = new jsPDF('p', 'mm', 'a4')
-    const marginLeft = 15
-    const marginRight = 15
+    const marginLeft = DOC.margin
+    const marginRight = DOC.margin
     const pageWidth = doc.internal.pageSize.getWidth()
     const contentWidth = pageWidth - marginLeft - marginRight
-    
-    // Cabeçalho
-    doc.setFillColor(79, 70, 229)
-    doc.rect(0, 0, pageWidth, 45, 'F')
-    
-    doc.setTextColor(255, 255, 255)
-    doc.setFontSize(20)
+    const docRef = `NR-${tabela.id?.substring(0, 6).toUpperCase() || Date.now()}-${new Date().toLocaleDateString('pt-BR').replace(/\//g, '')}`
+
+    addDocumentHeader(doc, 'NOTA DE RETORNO', 'Confirmação de seleção de produtos pelo cliente', docRef)
+    addClientBlock(doc, cliente, clientInfo)
+
+    let yPos = 78
+    doc.setDrawColor(...DOC.border)
+    doc.rect(marginLeft, yPos - 4, contentWidth, 18, 'S')
+    doc.setFontSize(9)
     doc.setFont('helvetica', 'bold')
-    doc.text('NOTA DE RETORNO', marginLeft, 25)
-    
-    doc.setFontSize(12)
+    doc.setTextColor(...DOC.textSecondary)
+    doc.text('REFERÊNCIA', marginLeft + 4, yPos + 2)
     doc.setFont('helvetica', 'normal')
-    doc.text('Confirmação de Seleção de Produtos', marginLeft, 35)
-    
-    doc.setTextColor(15, 23, 42)
-    let yPos = 60
-    
-    // Informações do Cliente
-    doc.setFontSize(11)
-    doc.setFont('helvetica', 'bold')
-    doc.text('Cliente:', marginLeft, yPos)
-    doc.setFont('helvetica', 'normal')
-    doc.text(cliente, marginLeft + 25, yPos)
-    yPos += 7
-    
-    doc.setFont('helvetica', 'bold')
-    doc.text('Tabela:', marginLeft, yPos)
-    doc.setFont('helvetica', 'normal')
-    doc.text(tabela.nome, marginLeft + 25, yPos)
-    yPos += 7
-    
-    doc.setFont('helvetica', 'bold')
-    doc.text('Data do Retorno:', marginLeft, yPos)
-    doc.setFont('helvetica', 'normal')
-    doc.text(new Date().toLocaleDateString('pt-BR'), marginLeft + 40, yPos)
-    yPos += 12
-    
-    // Tabela de Produtos Selecionados
+    doc.setTextColor(...DOC.textPrimary)
+    doc.text(`Tabela: ${tabela.nome}`, marginLeft + 8, yPos + 8)
+    doc.text(`Data do retorno: ${new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`, marginLeft + 8, yPos + 14)
+    yPos += 24
+
     const tableData = produtosSelecionados.map((produto: any, index: number) => {
       const valorTotal = produto.valorUnitario * produto.quantidade
       return [
@@ -1019,79 +1030,65 @@ export const exportService = {
         formatCurrency(valorTotal)
       ]
     })
-    
+
     autoTable(doc, {
       startY: yPos,
-      head: [['#', 'Código', 'Produto', 'Marca', 'Quantidade', 'Unidade', 'Valor Unitário', 'Valor Total']],
+      head: [['#', 'Código', 'Produto', 'Marca', 'Quantidade', 'Unidade', 'Valor Unit.', 'Valor Total']],
       body: tableData,
       theme: 'striped',
       headStyles: {
-        fillColor: [79, 70, 229],
+        fillColor: DOC.headerBg,
         textColor: [255, 255, 255],
         fontStyle: 'bold',
         fontSize: 9
       },
-      bodyStyles: {
-        fontSize: 9,
-        textColor: [15, 23, 42]
-      },
-      alternateRowStyles: {
-        fillColor: [248, 250, 252]
-      },
+      bodyStyles: { fontSize: 9, textColor: DOC.textPrimary },
+      alternateRowStyles: { fillColor: DOC.rowAlt },
+      styles: { cellPadding: 3, lineColor: DOC.border, lineWidth: 0.3 },
       margin: { left: marginLeft, right: marginRight }
     })
-    
-    yPos = (doc as any).lastAutoTable.finalY + 15
-    
-    // Valor Total
+
+    yPos = (doc as any).lastAutoTable.finalY + 12
+
     const valorTotal = produtosSelecionados.reduce((total: number, produto: any) => {
       let valorUnitario = produto.valorUnitario
-      
-      // Aplicar IPI
-      if (produto.aliquotaIpi) {
-        valorUnitario = valorUnitario * (1 + produto.aliquotaIpi / 100)
-      }
-      
-      // Aplicar desconto
+      if (produto.aliquotaIpi) valorUnitario = valorUnitario * (1 + produto.aliquotaIpi / 100)
       if (produto.desconto) {
-        if (produto.descontoTipo === 'percentual') {
-          valorUnitario = valorUnitario * (1 - produto.desconto / 100)
-        } else {
-          valorUnitario = Math.max(0, valorUnitario - produto.desconto)
-        }
+        if (produto.descontoTipo === 'percentual') valorUnitario = valorUnitario * (1 - produto.desconto / 100)
+        else valorUnitario = Math.max(0, valorUnitario - produto.desconto)
       }
-      
-      return total + (valorUnitario * produto.quantidade)
+      return total + valorUnitario * produto.quantidade
     }, 0)
-    
-    doc.setFontSize(12)
+
+    doc.setFillColor(...DOC.rowAlt)
+    doc.rect(marginLeft, yPos - 4, contentWidth, 14, 'F')
+    doc.setDrawColor(...DOC.border)
+    doc.rect(marginLeft, yPos - 4, contentWidth, 14, 'S')
+    doc.setFontSize(11)
     doc.setFont('helvetica', 'bold')
-    doc.text('Valor Total:', marginLeft, yPos)
-    doc.setFont('helvetica', 'bold')
-    doc.text(formatCurrency(valorTotal), pageWidth - marginRight - 20, yPos, { align: 'right' })
-    yPos += 15
-    
-    // Observações
+    doc.text('VALOR TOTAL DA SELEÇÃO', marginLeft + 6, yPos + 4)
+    doc.text(formatCurrency(valorTotal), pageWidth - marginRight - 6, yPos + 4, { align: 'right' })
+    yPos += 20
+
+    if (tabela.condicoesPagamento || tabela.prazoEntrega) {
+      doc.setFontSize(9)
+      doc.setFont('helvetica', 'normal')
+      doc.setTextColor(...DOC.textSecondary)
+      if (tabela.condicoesPagamento) doc.text(`Condições de pagamento: ${tabela.condicoesPagamento}`, marginLeft, yPos)
+      yPos += 5
+      if (tabela.prazoEntrega) doc.text(`Prazo de entrega: ${tabela.prazoEntrega}`, marginLeft, yPos)
+      yPos += 8
+      doc.setTextColor(...DOC.textPrimary)
+    }
     if (tabela.observacoes) {
-      doc.setFontSize(10)
       doc.setFont('helvetica', 'bold')
       doc.text('Observações:', marginLeft, yPos)
       doc.setFont('helvetica', 'normal')
       const obsLines = doc.splitTextToSize(tabela.observacoes, contentWidth - 20)
-      doc.text(obsLines, marginLeft, yPos + 6)
-      yPos += obsLines.length * 5 + 10
+      doc.text(obsLines, marginLeft, yPos + 5)
     }
-    
-    // Rodapé
-    doc.setFontSize(8)
-    doc.setTextColor(71, 85, 105)
-    doc.text(
-      `Nota gerada em ${new Date().toLocaleString('pt-BR')}`,
-      pageWidth / 2,
-      doc.internal.pageSize.getHeight() - 10,
-      { align: 'center' }
-    )
-    
+
+    addDocumentFooter(doc, 'Documento comercial · Confirmação de pedido')
     const fileName = `nota_retorno_${cliente.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`
     doc.save(fileName)
   },

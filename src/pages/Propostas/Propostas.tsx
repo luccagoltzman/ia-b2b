@@ -260,25 +260,14 @@ const Propostas = () => {
         typeof c === 'string' ? c : c.nome
       ) || []
       
-      // Enviar apenas se houver clientes, senão o backend usa os da tabela
       const clientesParaEnviar = clientesParaEnvio.length > 0 ? clientesParaEnvio : undefined
-      
-      console.log('Enviando tabela:', {
-        tabelaId: tabela.id,
-        clientesParaEnviar,
-        tabelaClientes: tabela.clientes
-      })
-      
       await apiService.enviarTabelaParaClientes(tabela.id, clientesParaEnviar)
-      
-      // Gerar e baixar arquivos PDF/Excel para cada cliente
+
       const clientes = tabela.clientes || (tabela.cliente ? [tabela.cliente] : [])
-      
       for (const cliente of clientes) {
         const clienteNome = typeof cliente === 'string' ? cliente : cliente.nome
-        // PDF
-        exportService.exportTabelaProdutosToPDF(tabela, clienteNome)
-        // Excel
+        const clientInfo = typeof cliente === 'object' && cliente ? { email: cliente.email, telefone: cliente.telefone } : undefined
+        exportService.exportTabelaProdutosToPDF(tabela, clienteNome, clientInfo)
         exportService.exportTabelaProdutosToExcel(tabela, clienteNome)
       }
       

@@ -1,47 +1,169 @@
 @use '../../styles/variables' as *;
 
 .simular-retorno {
+  padding-bottom: $spacing-2xl;
+
+  &-stepper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: $spacing-xl;
+    padding: $spacing-md $spacing-lg;
+    background: $bg-tertiary;
+    border-radius: $radius-xl;
+  }
+
+  &-step {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: $text-light;
+    transition: color $transition-base, transform $transition-base;
+
+    span {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: $radius-full;
+      background: $border-color;
+      color: $text-muted;
+      font-weight: 600;
+      font-size: 0.75rem;
+    }
+
+    &.active {
+      color: $primary-color;
+      font-weight: 600;
+      span {
+        background: $primary-color;
+        color: white;
+      }
+    }
+
+    &.completed {
+      color: $success;
+      span {
+        background: $success;
+        color: white;
+      }
+    }
+
+    @media (max-width: $breakpoint-md) {
+      font-size: 0.75rem;
+      span {
+        width: 24px;
+        height: 24px;
+      }
+    }
+  }
+
   &-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     margin-bottom: $spacing-xl;
+    gap: $spacing-md;
 
-    h2 {
-      margin-bottom: $spacing-xs;
+    .btn-back {
+      flex-shrink: 0;
+    }
+
+    &-title {
+      flex: 1;
+      h2 {
+        margin: 0 0 $spacing-xs 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: $text-primary;
+      }
     }
 
     @media (max-width: $breakpoint-md) {
       flex-direction: column;
-      gap: $spacing-md;
     }
   }
 
-  &-loading,
-  &-empty {
-    padding: 3rem;
+  &-loading-card,
+  &-empty-card {
     text-align: center;
-    color: #64748b;
+    padding: $spacing-3xl;
+  }
+
+  &-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $spacing-lg;
+    color: $text-secondary;
+
+    p {
+      margin: 0;
+      font-size: 0.9375rem;
+    }
+  }
+
+  &-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid $border-color;
+    border-top-color: $primary-color;
+    border-radius: $radius-full;
+    animation: simular-retorno-spin 0.8s linear infinite;
+  }
+
+  @keyframes simular-retorno-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  &-empty {
+    .simular-retorno-empty-icon {
+      font-size: 3rem;
+      margin-bottom: $spacing-md;
+      opacity: 0.6;
+    }
+    p {
+      margin: 0;
+      &:first-of-type {
+        font-weight: 600;
+        color: $text-primary;
+      }
+    }
+    .text-secondary {
+      font-size: 0.875rem;
+      margin-top: $spacing-sm;
+    }
+  }
+
+  &-list-card .card-header {
+    border-bottom: 1px solid $border-color;
+    padding-bottom: $spacing-md;
   }
 
   &-list {
-    padding: 1rem;
+    padding: $spacing-md 0;
   }
 
   &-item {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    padding: 1.5rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.5rem;
-    margin-bottom: 1rem;
+    padding: $spacing-lg;
+    border: 1px solid $border-color;
+    border-radius: $radius-lg;
+    margin-bottom: $spacing-md;
     background: white;
-    transition: all 0.2s;
+    transition: all $transition-base;
+    animation: simular-retorno-fadeIn 0.4s ease-out both;
 
     &:hover {
-      border-color: #4f46e5;
-      box-shadow: 0 2px 8px rgba(79, 70, 229, 0.1);
+      border-color: $primary-light;
+      box-shadow: $shadow-md;
     }
 
     &:last-child {
@@ -50,25 +172,37 @@
 
     @media (max-width: $breakpoint-md) {
       flex-direction: column;
-      gap: 1rem;
+      gap: $spacing-md;
+    }
+  }
+
+  @keyframes simular-retorno-fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
     }
   }
 
   &-item-info {
     flex: 1;
+    min-width: 0;
   }
 
   &-item-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
-    gap: 1rem;
+    margin-bottom: $spacing-md;
+    gap: $spacing-md;
 
     h4 {
       font-size: 1.125rem;
       font-weight: 600;
-      color: #0f172a;
+      color: $text-primary;
       margin: 0;
     }
   }
@@ -76,56 +210,172 @@
   &-item-details {
     display: flex;
     flex-wrap: wrap;
-    gap: 1.5rem;
-    margin-bottom: 1rem;
+    gap: $spacing-lg;
+    margin-bottom: $spacing-md;
   }
 
   &-detail {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: $spacing-sm;
     font-size: 0.875rem;
 
     &-label {
-      color: #64748b;
+      color: $text-secondary;
       font-weight: 500;
     }
   }
 
   &-clientes {
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid #e2e8f0;
+    margin-top: $spacing-sm;
+    padding-top: $spacing-sm;
+    border-top: 1px solid $border-light;
   }
 
   &-clientes-list {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-top: 0.5rem;
+    gap: $spacing-sm;
+    margin-top: $spacing-xs;
   }
 
   &-cliente-tag {
     display: inline-block;
     padding: 0.25rem 0.75rem;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
-    color: #475569;
+    background: $bg-tertiary;
+    border: 1px solid $border-color;
+    border-radius: $radius-sm;
+    font-size: 0.8125rem;
+    color: $text-secondary;
   }
 
   &-item-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-
+    flex-shrink: 0;
+    .btn {
+      min-width: 140px;
+    }
     @media (max-width: $breakpoint-md) {
       width: 100%;
-      
-      button {
+      .btn {
         width: 100%;
       }
     }
+  }
+
+  &-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: $spacing-lg;
+    animation: simular-retorno-fadeIn 0.2s ease-out;
+  }
+
+  &-modal {
+    background: white;
+    border-radius: $radius-xl;
+    padding: $spacing-xl;
+    max-width: 420px;
+    width: 100%;
+    box-shadow: $shadow-2xl;
+    animation: simular-retorno-scaleIn 0.25s ease-out;
+
+    h3 {
+      margin: 0 0 $spacing-xs 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: $text-primary;
+    }
+    .text-secondary {
+      font-size: 0.875rem;
+      margin-bottom: $spacing-lg;
+    }
+  }
+
+  @keyframes simular-retorno-scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  &-modal-clientes {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+    margin-bottom: $spacing-lg;
+  }
+
+  &-modal-cliente-btn {
+    padding: $spacing-md $spacing-lg;
+    text-align: left;
+    border: 1px solid $border-color;
+    border-radius: $radius-md;
+    background: white;
+    font-size: 0.9375rem;
+    color: $text-primary;
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover {
+      border-color: $primary-color;
+      background: rgba(79, 70, 229, 0.06);
+      color: $primary-color;
+    }
+  }
+
+  &-success-card {
+    text-align: center;
+    padding: $spacing-3xl;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  &-success-icon {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto $spacing-xl;
+    border-radius: $radius-full;
+    background: linear-gradient(135deg, $success 0%, #059669 100%);
+    color: white;
+    font-size: 2.25rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 40px rgba(16, 185, 129, 0.35);
+  }
+
+  &-success-card h2 {
+    margin: 0 0 $spacing-sm 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: $text-primary;
+  }
+
+  &-success-card .text-secondary {
+    margin-bottom: $spacing-xl;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+  }
+
+  &-success-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-md;
+    justify-content: center;
+  }
+
+  &-cliente-contato {
+    display: inline-flex;
+    gap: 0.25rem;
+    margin-left: 0.25rem;
   }
 }
