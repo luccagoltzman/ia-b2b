@@ -20,6 +20,15 @@ interface Cliente {
   nome: string
   email?: string
   telefone?: string
+  empresa?: string
+  cnpj?: string
+  endereco?: string
+  numero?: string
+  bairro?: string
+  cidade?: string
+  estado?: string
+  cep?: string
+  inscricaoEstadual?: string
 }
 
 interface TabelaProdutos {
@@ -41,6 +50,37 @@ interface TabelaProdutosFormProps {
   onCancel: () => void
 }
 
+interface ClienteCadastrado {
+  id: string
+  nome: string
+  email?: string
+  telefone?: string
+  empresa?: string
+  cnpj?: string
+  endereco?: string
+  numero?: string
+  bairro?: string
+  cidade?: string
+  estado?: string
+  cep?: string
+  inscricaoEstadual?: string
+}
+
+const defaultNovoCliente = (): Cliente => ({
+  nome: '',
+  email: '',
+  telefone: '',
+  empresa: '',
+  cnpj: '',
+  endereco: '',
+  numero: '',
+  bairro: '',
+  cidade: '',
+  estado: '',
+  cep: '',
+  inscricaoEstadual: ''
+})
+
 const TabelaProdutosForm = ({ tabela, onSubmit, onCancel }: TabelaProdutosFormProps) => {
   const [formData, setFormData] = useState<TabelaProdutos>({
     nome: '',
@@ -52,11 +92,8 @@ const TabelaProdutosForm = ({ tabela, onSubmit, onCancel }: TabelaProdutosFormPr
     dataVencimento: ''
   })
   const [loading, setLoading] = useState(false)
-  const [novoCliente, setNovoCliente] = useState<Cliente>({
-    nome: '',
-    email: '',
-    telefone: ''
-  })
+  const [clientesCadastrados, setClientesCadastrados] = useState<ClienteCadastrado[]>([])
+  const [novoCliente, setNovoCliente] = useState<Cliente>(defaultNovoCliente())
   const [novoProduto, setNovoProduto] = useState<Partial<ProdutoTabela>>({
     produto: '',
     produtoCodigo: '',
@@ -72,14 +109,12 @@ const TabelaProdutosForm = ({ tabela, onSubmit, onCancel }: TabelaProdutosFormPr
 
   useEffect(() => {
     if (tabela) {
-      // Converter clientes string para objetos Cliente se necessário
       const clientesConvertidos = tabela.clientes?.map(cliente => {
         if (typeof cliente === 'string') {
-          return { nome: cliente, email: '', telefone: '' }
+          return { nome: cliente, email: '', telefone: '', empresa: '', cnpj: '', endereco: '', numero: '', bairro: '', cidade: '', estado: '', cep: '', inscricaoEstadual: '' }
         }
-        return cliente
+        return { ...defaultNovoCliente(), ...cliente }
       }) || []
-      
       setFormData({
         ...tabela,
         clientes: clientesConvertidos
@@ -87,17 +122,61 @@ const TabelaProdutosForm = ({ tabela, onSubmit, onCancel }: TabelaProdutosFormPr
     }
   }, [tabela])
 
+  // Carregar clientes cadastrados para opção "puxar"
+  useEffect(() => {
+    let cancelled = false
+    apiService.getClientes()
+      .then((data: any) => {
+        if (!cancelled && Array.isArray(data)) {
+          setClientesCadastrados(data)
+        }
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [])
+
+  const handlePuxarCliente = (clienteId: string) => {
+    if (!clienteId) return
+    const c = clientesCadastrados.find(x => x.id === clienteId)
+    if (c) {
+      setNovoCliente({
+        nome: c.nome,
+        email: c.email || '',
+        telefone: c.telefone || '',
+        empresa: c.empresa || '',
+        cnpj: c.cnpj || '',
+        endereco: c.endereco || '',
+        numero: c.numero || '',
+        bairro: c.bairro || '',
+        cidade: c.cidade || '',
+        estado: c.estado || '',
+        cep: c.cep || '',
+        inscricaoEstadual: c.inscricaoEstadual || ''
+      })
+    }
+  }
+
   const handleAddCliente = () => {
     if (novoCliente.nome.trim()) {
+      const clienteToAdd: Cliente = {
+        nome: novoCliente.nome.trim(),
+        email: novoCliente.email?.trim() || undefined,
+        telefone: novoCliente.telefone?.trim() || undefined,
+        empresa: novoCliente.empresa?.trim() || undefined,
+        cnpj: novoCliente.cnpj?.trim() || undefined,
+        endereco: novoCliente.endereco?.trim() || undefined,
+        numero: novoCliente.numero?.trim() || undefined,
+        bairro: novoCliente.bairro?.trim() || undefined,
+        cidade: novoCliente.cidade?.trim() || undefined,
+        estado: novoCliente.estado?.trim() || undefined,
+        cep: novoCliente.cep?.trim() || undefined,
+        inscricaoEstadual: novoCliente.inscricaoEstadual?.trim() || undefined
+      }
       setFormData(prev => ({
         ...prev,
-        clientes: [...(prev.clientes || []), { ...novoCliente, nome: novoCliente.nome.trim() }]
+        clientes: [...(prev.clientes || []), clienteToAdd]
       }))
-      setNovoCliente({
-        nome: '',
-        email: '',
-        telefone: ''
-      })
+      setNovoCliente(defaultNovoCliente())
     }
   }
 
@@ -209,9 +288,36 @@ const TabelaProdutosForm = ({ tabela, onSubmit, onCancel }: TabelaProdutosFormPr
         {/* Clientes */}
         <div className="tabela-form-section">
           <h4 className="tabela-form-section-title">Clientes para Envio *</h4>
+          {clientesCadastrados.length > 0 && (
+            <div className="tabela-form-row tabela-form-row-puxar">
+              <div className="tabela-form-group">
+                <label className="tabela-form-label">Puxar cliente cadastrado</label>
+                <select
+                  className="input"
+                  value=""
+                  onChange={(e) => {
+                    const id = e.target.value
+                    if (id) handlePuxarCliente(id)
+                  }}
+                  aria-label="Selecionar cliente cadastrado"
+                >
+                  <option value="">— Selecione um cliente —</option>
+                  {clientesCadastrados.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.nome}
+                      {c.email ? ` (${c.email})` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
+          <p className="tabela-form-hint-cliente">
+            {clientesCadastrados.length > 0 ? 'Selecione um cliente acima para puxar todos os dados, ou digite abaixo:' : 'Digite os dados do cliente abaixo:'}
+          </p>
           <div className="tabela-form-row">
             <div className="tabela-form-group">
-              <label className="tabela-form-label">Nome do Cliente *</label>
+              <label className="tabela-form-label">Nome / Nome fantasia *</label>
               <input
                 type="text"
                 className="input"
@@ -220,6 +326,28 @@ const TabelaProdutosForm = ({ tabela, onSubmit, onCancel }: TabelaProdutosFormPr
                 placeholder="Nome do cliente"
               />
             </div>
+            <div className="tabela-form-group">
+              <label className="tabela-form-label">Razão social / Empresa</label>
+              <input
+                type="text"
+                className="input"
+                value={novoCliente.empresa || ''}
+                onChange={(e) => setNovoCliente({ ...novoCliente, empresa: e.target.value })}
+                placeholder="Razão social"
+              />
+            </div>
+            <div className="tabela-form-group tabela-form-group-cnpj">
+              <label className="tabela-form-label">CNPJ</label>
+              <input
+                type="text"
+                className="input"
+                value={novoCliente.cnpj || ''}
+                onChange={(e) => setNovoCliente({ ...novoCliente, cnpj: e.target.value })}
+                placeholder="00.000.000/0001-00"
+              />
+            </div>
+          </div>
+          <div className="tabela-form-row">
             <div className="tabela-form-group">
               <label className="tabela-form-label">Email</label>
               <input
@@ -251,22 +379,88 @@ const TabelaProdutosForm = ({ tabela, onSubmit, onCancel }: TabelaProdutosFormPr
               </button>
             </div>
           </div>
+          <div className="tabela-form-row">
+            <div className="tabela-form-group">
+              <label className="tabela-form-label">Endereço</label>
+              <input
+                type="text"
+                className="input"
+                value={novoCliente.endereco || ''}
+                onChange={(e) => setNovoCliente({ ...novoCliente, endereco: e.target.value })}
+                placeholder="Rua, avenida..."
+              />
+            </div>
+            <div className="tabela-form-group tabela-form-group-numero">
+              <label className="tabela-form-label">Nº</label>
+              <input
+                type="text"
+                className="input"
+                value={novoCliente.numero || ''}
+                onChange={(e) => setNovoCliente({ ...novoCliente, numero: e.target.value })}
+                placeholder="Nº"
+              />
+            </div>
+            <div className="tabela-form-group">
+              <label className="tabela-form-label">Bairro</label>
+              <input
+                type="text"
+                className="input"
+                value={novoCliente.bairro || ''}
+                onChange={(e) => setNovoCliente({ ...novoCliente, bairro: e.target.value })}
+                placeholder="Bairro"
+              />
+            </div>
+            <div className="tabela-form-group">
+              <label className="tabela-form-label">Cidade</label>
+              <input
+                type="text"
+                className="input"
+                value={novoCliente.cidade || ''}
+                onChange={(e) => setNovoCliente({ ...novoCliente, cidade: e.target.value })}
+                placeholder="Cidade"
+              />
+            </div>
+            <div className="tabela-form-group tabela-form-group-uf">
+              <label className="tabela-form-label">UF</label>
+              <input
+                type="text"
+                className="input"
+                value={novoCliente.estado || ''}
+                onChange={(e) => setNovoCliente({ ...novoCliente, estado: e.target.value })}
+                placeholder="UF"
+                maxLength={2}
+              />
+            </div>
+            <div className="tabela-form-group tabela-form-group-cep">
+              <label className="tabela-form-label">CEP</label>
+              <input
+                type="text"
+                className="input"
+                value={novoCliente.cep || ''}
+                onChange={(e) => setNovoCliente({ ...novoCliente, cep: e.target.value })}
+                placeholder="00000-000"
+              />
+            </div>
+          </div>
           <small style={{ color: '#64748b', fontSize: '0.75rem', display: 'block', marginTop: '0.5rem' }}>
-            Email e telefone são opcionais, mas necessários para envio automático futuro via email ou WhatsApp
+            Ao puxar um cliente cadastrado, todos os dados comerciais são preenchidos. Você pode editar antes de adicionar.
           </small>
           {formData.clientes && formData.clientes.length > 0 && (
             <div className="tabela-clientes-list">
               {formData.clientes.map((cliente, index) => {
-                const clienteObj = typeof cliente === 'string' 
-                  ? { nome: cliente, email: '', telefone: '' }
+                const clienteObj = typeof cliente === 'string'
+                  ? { nome: cliente, email: '', telefone: '', empresa: '', cnpj: '', endereco: '', numero: '', bairro: '', cidade: '', estado: '', cep: '', inscricaoEstadual: '' }
                   : cliente
-                
                 return (
                   <div key={index} className="tabela-cliente-item">
                     <div className="tabela-cliente-info">
                       <div className="tabela-cliente-nome">
                         <strong>{clienteObj.nome}</strong>
+                        {clienteObj.empresa && <span className="tabela-cliente-empresa"> · {clienteObj.empresa}</span>}
                       </div>
+                      {clienteObj.cnpj && (
+                        <div className="tabela-cliente-cnpj">CNPJ {clienteObj.cnpj}</div>
+                      )}
                       {(clienteObj.email || clienteObj.telefone) && (
                         <div className="tabela-cliente-contato">
                           {clienteObj.email && (
@@ -275,6 +469,12 @@ const TabelaProdutosForm = ({ tabela, onSubmit, onCancel }: TabelaProdutosFormPr
                           {clienteObj.telefone && (
                             <span className="tabela-cliente-telefone">📱 {clienteObj.telefone}</span>
                           )}
+                        </div>
+                      )}
+                      {(clienteObj.cidade || clienteObj.estado) && (
+                        <div className="tabela-cliente-endereco">
+                          📍 {[clienteObj.cidade, clienteObj.estado].filter(Boolean).join(' - ')}
+                          {clienteObj.cep && ` · CEP ${clienteObj.cep}`}
                         </div>
                       )}
                     </div>

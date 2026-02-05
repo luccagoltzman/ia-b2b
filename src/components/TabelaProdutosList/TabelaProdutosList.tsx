@@ -36,6 +36,7 @@ interface TabelaProdutos {
 interface TabelaProdutosListProps {
   tabelas: TabelaProdutos[]
   loading: boolean
+  clientesRetornados?: Record<string, string[]>
   onEdit: (tabela: TabelaProdutos) => void
   onView?: (tabela: TabelaProdutos) => void
   onEnviar?: (tabela: TabelaProdutos) => void
@@ -47,6 +48,7 @@ interface TabelaProdutosListProps {
 const TabelaProdutosList = ({ 
   tabelas, 
   loading, 
+  clientesRetornados = {},
   onEdit, 
   onView, 
   onEnviar,
@@ -70,14 +72,18 @@ const TabelaProdutosList = ({
     return !!(cliente?.email || cliente?.telefone)
   }
 
-  const getStatusBadge = (status?: string) => {
+  const getStatusBadge = (status?: string, temRetornos?: boolean) => {
     const statusMap: Record<string, { label: string; class: string }> = {
       rascunho: { label: 'Rascunho', class: 'info' },
       enviada: { label: 'Enviada', class: 'success' },
       aguardando_resposta: { label: 'Aguardando Resposta', class: 'warning' },
       proposta_gerada: { label: 'Proposta Gerada', class: 'success' }
     }
-    return statusMap[status || 'rascunho'] || { label: status || 'Rascunho', class: 'info' }
+    const base = statusMap[status || 'rascunho'] || { label: status || 'Rascunho', class: 'info' }
+    if (temRetornos && status !== 'proposta_gerada') {
+      return { label: `${base.label} · Retornos`, class: 'success' as const }
+    }
+    return base
   }
 
   if (loading) {
@@ -119,6 +125,7 @@ const TabelaProdutosList = ({
             <tr>
               <th>Nome</th>
               <th>Clientes</th>
+              <th>Retornos</th>
               <th>Produtos</th>
               <th>Status</th>
               <th>Data Criação</th>
@@ -128,7 +135,9 @@ const TabelaProdutosList = ({
           </thead>
           <tbody>
             {tabelas.map((tabela) => {
-              const status = getStatusBadge(tabela.status)
+              const retornos = clientesRetornados[tabela.id] || []
+              const temRetornos = retornos.length > 0
+              const status = getStatusBadge(tabela.status, temRetornos)
               const clientesCount = tabela.clientes?.length || (tabela.cliente ? 1 : 0)
               return (
                 <tr key={tabela.id}>
@@ -144,6 +153,16 @@ const TabelaProdutosList = ({
                         </span>
                       )}
                     </div>
+                  </td>
+                  <td>
+                    {temRetornos ? (
+                      <div className="tabela-retornos">
+                        <span className="tabela-retornos-badge">{retornos.length} retorno(s)</span>
+                        <div className="tabela-retornos-nomes">{retornos.join(', ')}</div>
+                      </div>
+                    ) : (
+                      <span className="text-muted">—</span>
+                    )}
                   </td>
                   <td>{tabela.produtos.length} produtos</td>
                   <td>
@@ -210,7 +229,9 @@ const TabelaProdutosList = ({
       {/* Versão Mobile - Cards */}
       <div className="tabela-list tabela-list-mobile">
         {tabelas.map((tabela) => {
-          const status = getStatusBadge(tabela.status)
+          const retornos = clientesRetornados[tabela.id] || []
+          const temRetornos = retornos.length > 0
+          const status = getStatusBadge(tabela.status, temRetornos)
           const clientesCount = tabela.clientes?.length || (tabela.cliente ? 1 : 0)
           return (
             <div key={tabela.id} className="tabela-card">
@@ -220,6 +241,13 @@ const TabelaProdutosList = ({
                   {status.label}
                 </span>
               </div>
+              
+              {temRetornos && (
+                <div className="tabela-card-retornos">
+                  <span className="tabela-card-retornos-label">Clientes que retornaram:</span>
+                  <div className="tabela-card-retornos-nomes">{retornos.join(', ')}</div>
+                </div>
+              )}
               
               <div className="tabela-card-info">
                 <div className="tabela-card-info-item">

@@ -32,9 +32,38 @@
   flex-wrap: wrap;
 }
 
+.tabela-form-row-puxar {
+  margin-bottom: 0.5rem;
+}
+
+.tabela-form-hint-cliente {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin: 0 0 0.75rem;
+}
+
 .tabela-form-group {
   flex: 1;
   min-width: 200px;
+
+  &.tabela-form-group-cnpj {
+    min-width: 180px;
+  }
+
+  &.tabela-form-group-numero {
+    flex: 0 0 80px;
+    min-width: 80px;
+  }
+
+  &.tabela-form-group-uf {
+    flex: 0 0 70px;
+    min-width: 70px;
+  }
+
+  &.tabela-form-group-cep {
+    flex: 0 0 120px;
+    min-width: 120px;
+  }
 }
 
 .tabela-form-label {
@@ -75,6 +104,21 @@
 .tabela-cliente-nome {
   font-weight: 600;
   color: #0f172a;
+}
+
+.tabela-cliente-empresa {
+  font-weight: 400;
+  color: #475569;
+}
+
+.tabela-cliente-cnpj {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.tabela-cliente-endereco {
+  font-size: 0.75rem;
+  color: #64748b;
 }
 
 .tabela-cliente-contato {

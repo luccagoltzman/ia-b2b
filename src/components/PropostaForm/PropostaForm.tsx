@@ -169,30 +169,29 @@ const PropostaForm = ({ proposta, onSubmit, onCancel }: PropostaFormProps) => {
     }
   }, [proposta])
 
-  // Calcula valor total automaticamente quando valorUnitario e quantidade são informados
+  // Calcula valor total: (unitário × quantidade) com DESCONTO aplicado como REDUÇÃO (nunca soma)
   useEffect(() => {
     const valorUnit = parseFloat(formData.valorUnitario) || 0
     const qtd = parseFloat(formData.quantidade) || 0
-    
-    // Só calcula se ambos estiverem preenchidos
-    if (valorUnit > 0 && qtd > 0) {
-      let valorTotal = valorUnit * qtd
+    if (valorUnit <= 0 || qtd <= 0) return
 
-      if (formData.desconto) {
-        const desconto = parseFloat(formData.desconto) || 0
-        if (formData.descontoTipo === 'percentual' && desconto > 0) {
-          valorTotal = valorTotal * (1 - desconto / 100)
-        } else if (formData.descontoTipo === 'valor' && desconto > 0) {
-          valorTotal = Math.max(0, valorTotal - desconto)
-        }
-      }
+    let valorTotal = valorUnit * qtd
+    const descontoNum = parseFloat(formData.desconto) || 0
 
-      const novoValor = valorTotal.toFixed(2)
-      const valorAtual = parseFloat(formData.valor) || 0
-      // Só atualiza se o valor calculado for diferente do atual (evita loop infinito)
-      if (Math.abs(valorAtual - parseFloat(novoValor)) > 0.01) {
-        setFormData(prev => ({ ...prev, valor: novoValor }))
+    if (formData.desconto && descontoNum > 0) {
+      if (formData.descontoTipo === 'percentual') {
+        // Desconto percentual: REDUZ o valor (ex.: 10% → multiplica por 0,90)
+        valorTotal = valorTotal * (1 - descontoNum / 100)
+      } else {
+        // Desconto em R$: SUBTRAI do total
+        valorTotal = Math.max(0, valorTotal - descontoNum)
       }
+    }
+
+    const novoValor = valorTotal.toFixed(2)
+    const valorAtual = parseFloat(formData.valor) || 0
+    if (Math.abs(valorAtual - parseFloat(novoValor)) > 0.01) {
+      setFormData(prev => ({ ...prev, valor: novoValor }))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.valorUnitario, formData.quantidade, formData.desconto, formData.descontoTipo])
@@ -200,11 +199,24 @@ const PropostaForm = ({ proposta, onSubmit, onCancel }: PropostaFormProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-
+    const valorUnit = parseFloat(formData.valorUnitario) || 0
+    const qtd = parseFloat(formData.quantidade) || 0
+    const descontoNum = formData.desconto ? parseFloat(formData.desconto) : 0
+    let valorFinal = parseFloat(formData.valor) || 0
+    if (valorUnit > 0 && qtd > 0) {
+      valorFinal = valorUnit * qtd
+      if (descontoNum > 0) {
+        if (formData.descontoTipo === 'percentual') {
+          valorFinal = valorFinal * (1 - descontoNum / 100)
+        } else {
+          valorFinal = Math.max(0, valorFinal - descontoNum)
+        }
+      }
+    }
     try {
       await onSubmit({
         ...formData,
-        valor: parseFloat(formData.valor) || 0,
+        valor: Math.round(valorFinal * 100) / 100,
         valorUnitario: formData.valorUnitario ? parseFloat(formData.valorUnitario) : undefined,
         quantidade: formData.quantidade ? parseFloat(formData.quantidade) : undefined,
         desconto: formData.desconto ? parseFloat(formData.desconto) : undefined,

@@ -94,6 +94,58 @@ export const apiService = {
     return response.data
   },
 
+  // Clientes
+  async getClientes() {
+    const response = await api.get('/clientes')
+    return response.data
+  },
+
+  async getCliente(id: string) {
+    const response = await api.get(`/clientes/${id}`)
+    return response.data
+  },
+
+  async createCliente(dados: {
+    nome: string
+    email?: string
+    telefone?: string
+    empresa?: string
+    cnpj?: string
+    endereco?: string
+    numero?: string
+    bairro?: string
+    cidade?: string
+    estado?: string
+    cep?: string
+    inscricaoEstadual?: string
+  }) {
+    const response = await api.post('/clientes', dados)
+    return response.data
+  },
+
+  async updateCliente(id: string, dados: {
+    nome?: string
+    email?: string
+    telefone?: string
+    empresa?: string
+    cnpj?: string
+    endereco?: string
+    numero?: string
+    bairro?: string
+    cidade?: string
+    estado?: string
+    cep?: string
+    inscricaoEstadual?: string
+  }) {
+    const response = await api.put(`/clientes/${id}`, dados)
+    return response.data
+  },
+
+  async deleteCliente(id: string) {
+    const response = await api.delete(`/clientes/${id}`)
+    return response.data
+  },
+
   // Visitas
   async getVisitas() {
     const response = await api.get('/visitas')

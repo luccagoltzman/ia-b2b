@@ -6,6 +6,7 @@ import Propostas from './pages/Propostas/Propostas'
 import Visitas from './pages/Visitas/Visitas'
 import PosVenda from './pages/PosVenda/PosVenda'
 import Configuracoes from './pages/Configuracoes/Configuracoes'
+import Clientes from './pages/Clientes/Clientes'
 import SimularRetorno from './pages/SimularRetorno/SimularRetorno'
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
           <Route path="/visitas" element={<Visitas />} />
           <Route path="/pos-venda" element={<PosVenda />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
+          <Route path="/clientes" element={<Clientes />} />
           <Route path="/simular-retorno" element={<SimularRetorno />} />
         </Routes>
       </Layout>

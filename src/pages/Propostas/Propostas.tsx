@@ -62,6 +62,9 @@ interface Proposta {
   tipoPedido?: string
   transportadora?: string
   informacoesAdicionais?: string
+  // Proposta gerada a partir de tabela (simular retorno)
+  tabelaId?: string
+  geradaAutomaticamente?: boolean
 }
 
 const Propostas = () => {
@@ -89,8 +92,19 @@ const Propostas = () => {
       fetchPropostas()
     } else {
       fetchTabelas()
+      fetchPropostas() // para exibir "clientes que retornaram" na aba Tabelas
     }
   }, [activeTab])
+
+  // Clientes que já retornaram (geraram proposta) por tabela
+  const clientesRetornadosPorTabela = propostas
+    .filter((p) => p.tabelaId && (p.geradaAutomaticamente === true || p.tabelaId))
+    .reduce<Record<string, string[]>>((acc, p) => {
+      const id = p.tabelaId!
+      if (!acc[id]) acc[id] = []
+      if (p.cliente && !acc[id].includes(p.cliente)) acc[id].push(p.cliente)
+      return acc
+    }, {})
 
   const fetchPropostas = async () => {
     try {
@@ -336,6 +350,7 @@ const Propostas = () => {
       setShowClienteSelecao(false)
       setTabelaParaSelecao(null)
       await fetchTabelas()
+      await fetchPropostas() // atualiza "clientes que retornaram" na aba Tabelas
       
       // Opcional: redirecionar para ver a proposta gerada
       if (proposta?.id) {
@@ -433,11 +448,12 @@ const Propostas = () => {
               <TabelaProdutosList
                 tabelas={tabelas}
                 loading={loadingTabelas}
+                clientesRetornados={clientesRetornadosPorTabela}
                 onEdit={handleEditTabela}
                 onEnviar={handleEnviarTabela}
                 onGerarProposta={handleGerarProposta}
                 onSimularRetorno={handleSimularRetorno}
-                onRefresh={fetchTabelas}
+                onRefresh={() => { fetchTabelas(); fetchPropostas() }}
               />
             </div>
           )}

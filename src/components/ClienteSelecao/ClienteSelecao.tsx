@@ -94,9 +94,12 @@ const ClienteSelecao = ({ tabela, cliente, onGerarProposta, onCancel }: ClienteS
       const selecoes: ProdutoSelecionado[] = Array.from(produtosSelecionados).map(produtoId => ({
         produtoId
       }))
-      
-      // Obter os produtos selecionados completos
       const produtosCompletos = tabela.produtos.filter(p => produtosSelecionados.has(p.id))
+
+      // 1) Gerar proposta definitiva automaticamente (já persiste no backend)
+      await onGerarProposta(selecoes)
+
+      // 2) Em seguida gerar e baixar a nota de retorno (PDF e Excel)
       const clientInfo = tabela.clientes
         ?.map(c => (typeof c === 'string' ? { nome: c } : c))
         ?.find(c => c.nome === cliente)
@@ -104,15 +107,8 @@ const ClienteSelecao = ({ tabela, cliente, onGerarProposta, onCancel }: ClienteS
         ? { email: (clientInfo as ClienteInfo).email, telefone: (clientInfo as ClienteInfo).telefone }
         : undefined
       exportService.exportNotaRetornoClienteToPDF(tabela, cliente, produtosCompletos, pdfClientInfo)
-      
-      // Pequeno delay antes de gerar Excel
-      await new Promise(resolve => setTimeout(resolve, 500))
+      await new Promise(resolve => setTimeout(resolve, 300))
       exportService.exportNotaRetornoClienteToExcel(tabela, cliente, produtosCompletos)
-      
-      // Gerar proposta definitiva
-      await onGerarProposta(selecoes)
-      
-      // Mensagem será mostrada pelo componente pai se necessário
     } finally {
       setLoading(false)
     }
@@ -148,7 +144,7 @@ const ClienteSelecao = ({ tabela, cliente, onGerarProposta, onCancel }: ClienteS
           <h3 className="card-title">Seleção de produtos</h3>
           <p className="text-secondary">Cliente: {cliente} · Tabela: {tabela.nome}</p>
           <p className="cliente-selecao-hint">
-            Marque os itens desejados. Ao confirmar, a nota de retorno e a proposta serão geradas automaticamente.
+            Marque os itens que o cliente deseja. Ao confirmar, a nota de retorno (PDF/Excel) é gerada e a <strong>proposta definitiva é criada automaticamente</strong>.
           </p>
         </div>
 
@@ -208,7 +204,7 @@ const ClienteSelecao = ({ tabela, cliente, onGerarProposta, onCancel }: ClienteS
                 <strong className="valor-total">{formatCurrency(valorTotal)}</strong>
               </div>
               <p className="cliente-selecao-resumo-note">
-                Nota de retorno (PDF/Excel) e proposta serão geradas ao confirmar.
+                Ao confirmar: nota de retorno (download) + proposta definitiva criada automaticamente.
               </p>
               <div className="cliente-selecao-actions">
                 <button type="button" className="btn btn-secondary" onClick={onCancel} disabled={loading}>
@@ -220,7 +216,7 @@ const ClienteSelecao = ({ tabela, cliente, onGerarProposta, onCancel }: ClienteS
                   onClick={handleGerarProposta}
                   disabled={loading || produtosMarcados.length === 0}
                 >
-                  {loading ? 'Gerando...' : 'Confirmar e gerar documentos'}
+                  {loading ? 'Gerando nota e proposta...' : 'Confirmar seleção e gerar proposta'}
                 </button>
               </div>
             </div>
