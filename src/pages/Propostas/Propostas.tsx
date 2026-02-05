@@ -6,6 +6,8 @@ import PropostaDetail from '../../components/PropostaDetail/PropostaDetail'
 import TabelaProdutosForm from '../../components/TabelaProdutosForm/TabelaProdutosForm'
 import TabelaProdutosList from '../../components/TabelaProdutosList/TabelaProdutosList'
 import ClienteSelecao from '../../components/ClienteSelecao/ClienteSelecao'
+import PropostaPorPrompt from '../../components/PropostaPorPrompt/PropostaPorPrompt'
+import type { ResultadoPromptProposta } from '../../components/PropostaPorPrompt/PropostaPorPrompt'
 import { apiService } from '../../services/apiService'
 import { exportService } from '../../services/exportService'
 import './Propostas.scss'
@@ -295,8 +297,97 @@ const Propostas = () => {
   }
 
   const handleSimularRetorno = (tabela: any) => {
-    // Redirecionar para a página de simular retorno
     navigate('/simular-retorno')
+  }
+
+  const handlePropostaPorPromptSuccess = async (resultado: ResultadoPromptProposta) => {
+    try {
+      const nomeCliente = resultado.cliente?.trim() || ''
+      if (!nomeCliente) {
+        alert('Não foi possível identificar o cliente no seu texto. Tente novamente.')
+        return
+      }
+
+      // Verificar se o cliente já está cadastrado (busca por nome, case-insensitive)
+      let clientesCadastro: any[] = []
+      try {
+        clientesCadastro = await apiService.getClientes()
+        if (!Array.isArray(clientesCadastro)) clientesCadastro = []
+      } catch {
+        clientesCadastro = []
+      }
+
+      const nomeNormalizado = nomeCliente.toLowerCase()
+      const clienteCadastrado = clientesCadastro.find(
+        (c: any) => (c.nome || '').trim().toLowerCase() === nomeNormalizado
+      )
+
+      if (!clienteCadastrado) {
+        const msg = `O cliente "${nomeCliente}" não está cadastrado. Cadastre-o com os dados comerciais (CNPJ, empresa, etc.) para continuar. Você será redirecionado ao Cadastro de Clientes.`
+        if (window.confirm(msg + '\n\nDeseja ir ao cadastro agora?')) {
+          navigate('/clientes', { state: { nomeSugerido: nomeCliente } })
+        }
+        return
+      }
+
+      const dataVencimento = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+      const nomeTabela = resultado.nomeTabela || `Proposta ${resultado.cliente}`
+
+      let produtos: Array<{ id: string; produto: string; marca: string; unidadeMedida: string; quantidade: number; valorUnitario: number }>
+      if (resultado.produtosSugeridos && resultado.produtosSugeridos.length > 0) {
+        produtos = resultado.produtosSugeridos.map((p, i) => ({
+          id: `p-${Date.now()}-${i}`,
+          produto: p.produto,
+          marca: p.marca || '',
+          unidadeMedida: p.unidadeMedida || 'unidade',
+          quantidade: p.quantidade ?? 1,
+          valorUnitario: p.valorUnitario ?? 0
+        }))
+      } else {
+        const qtd = resultado.quantidadeProdutos ?? 3
+        produtos = Array.from({ length: qtd }, (_, i) => ({
+          id: `p-${Date.now()}-${i}`,
+          produto: `Produto ${i + 1}`,
+          marca: '',
+          unidadeMedida: 'unidade',
+          quantidade: 1,
+          valorUnitario: 0
+        }))
+      }
+
+      const dadosParaEnvio = {
+        nome: nomeTabela,
+        clientes: [resultado.cliente],
+        produtos,
+        dataVencimento
+      }
+
+      const created = await apiService.createTabelaProdutos(dadosParaEnvio)
+      await fetchTabelas()
+
+      const tabelaParaEdicao = {
+        ...created,
+        clientes: created?.clientes ?? [resultado.cliente],
+        produtos: created?.produtos ?? produtos
+      }
+
+      if (resultado.acao === 'criar_e_enviar' && created?.id) {
+        await apiService.enviarTabelaParaClientes(created.id, [resultado.cliente])
+        const tabelaComDados = { ...tabelaParaEdicao, produtos: tabelaParaEdicao.produtos }
+        exportService.exportTabelaProdutosToPDF(tabelaComDados, resultado.cliente)
+        exportService.exportTabelaProdutosToExcel(tabelaComDados, resultado.cliente)
+        alert('Proposta criada e enviada! Os arquivos PDF e Excel foram gerados.')
+      } else {
+        alert('Tabela criada com sucesso! Revise os dados abaixo e envie quando quiser.')
+      }
+
+      setEditingTabela(tabelaParaEdicao)
+      setShowTabelaForm(true)
+    } catch (error: any) {
+      console.error('Erro ao criar proposta por IA:', error)
+      const msg = error?.response?.data?.message || error?.message || 'Erro ao criar tabela. Tente novamente.'
+      alert(msg)
+    }
   }
 
   // Helper para extrair nome do cliente (string ou objeto)
@@ -445,6 +536,10 @@ const Propostas = () => {
             />
           ) : (
             <div className="propostas-list-section">
+              <PropostaPorPrompt
+                onSuccess={handlePropostaPorPromptSuccess}
+                onError={(msg) => alert(msg)}
+              />
               <TabelaProdutosList
                 tabelas={tabelas}
                 loading={loadingTabelas}

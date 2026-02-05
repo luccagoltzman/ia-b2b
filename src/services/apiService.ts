@@ -310,5 +310,24 @@ export const apiService = {
     })
     return response.data
   },
+
+  // IA – Proposta por prompt
+  async interpretarPromptProposta(prompt: string): Promise<{
+    cliente: string
+    clienteId?: string
+    quantidadeProdutos?: number
+    produtosSugeridos?: Array<{
+      produto: string
+      marca?: string
+      quantidade?: number
+      valorUnitario?: number
+      unidadeMedida?: string
+    }>
+    acao?: 'criar' | 'criar_e_enviar'
+    nomeTabela?: string
+  }> {
+    const response = await api.post('/ia/proposta-por-prompt', { prompt })
+    return response.data
+  },
 }
 

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import ClienteForm from '../../components/ClienteForm/ClienteForm'
 import ClienteList from '../../components/ClienteList/ClienteList'
 import { apiService } from '../../services/apiService'
@@ -6,14 +7,29 @@ import type { Cliente, ClienteFormDados } from '../../components/ClienteForm/Cli
 import './Clientes.scss'
 
 const Clientes = () => {
+  const location = useLocation()
+  const navigate = useNavigate()
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [showForm, setShowForm] = useState(false)
   const [editingCliente, setEditingCliente] = useState<Cliente | null>(null)
   const [loading, setLoading] = useState(true)
+  const [nomeSugerido, setNomeSugerido] = useState<string | null>(null)
 
   useEffect(() => {
     fetchClientes()
   }, [])
+
+  // Se veio da proposta por prompt (cliente não cadastrado), abrir formulário com nome sugerido
+  useEffect(() => {
+    const state = location.state as { nomeSugerido?: string } | null
+    if (state?.nomeSugerido?.trim()) {
+      setNomeSugerido(state.nomeSugerido.trim())
+      setShowForm(true)
+      setEditingCliente(null)
+      navigate(location.pathname, { replace: true, state: {} })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state])
 
   const fetchClientes = async () => {
     try {
@@ -33,6 +49,7 @@ const Clientes = () => {
       await apiService.createCliente(dados)
       await fetchClientes()
       setShowForm(false)
+      setNomeSugerido(null)
     } catch (error) {
       console.error('Erro ao cadastrar cliente:', error)
       alert('Erro ao cadastrar cliente. Tente novamente.')
@@ -88,10 +105,18 @@ const Clientes = () => {
         )}
       </div>
 
+      {nomeSugerido && (
+        <div className="clientes-banner clientes-banner-from-proposta">
+          <p>
+            <strong>Cadastre o cliente com os dados comerciais</strong> (CNPJ, empresa, endereço, etc.) para poder usar em propostas. Preencha os campos abaixo.
+          </p>
+        </div>
+      )}
       {showForm ? (
         <div className="clientes-form-section">
           <ClienteForm
             cliente={editingCliente}
+            initialNome={nomeSugerido || undefined}
             onSubmit={
               editingCliente
                 ? (dados) => handleUpdateCliente(editingCliente.id, dados)
@@ -100,6 +125,7 @@ const Clientes = () => {
             onCancel={() => {
               setShowForm(false)
               setEditingCliente(null)
+              setNomeSugerido(null)
             }}
           />
         </div>

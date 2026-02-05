@@ -34,6 +34,8 @@ export type ClienteFormDados = {
 
 interface ClienteFormProps {
   cliente?: Cliente | null
+  /** Nome sugerido ao abrir o formulário para novo cliente (ex.: vindo do prompt de proposta) */
+  initialNome?: string
   onSubmit: (dados: ClienteFormDados) => void
   onCancel: () => void
 }
@@ -53,7 +55,7 @@ const defaultForm = (): ClienteFormDados & Record<string, string> => ({
   inscricaoEstadual: ''
 })
 
-const ClienteForm = ({ cliente, onSubmit, onCancel }: ClienteFormProps) => {
+const ClienteForm = ({ cliente, initialNome, onSubmit, onCancel }: ClienteFormProps) => {
   const [formData, setFormData] = useState(defaultForm())
   const [loading, setLoading] = useState(false)
 
@@ -74,9 +76,10 @@ const ClienteForm = ({ cliente, onSubmit, onCancel }: ClienteFormProps) => {
         inscricaoEstadual: cliente.inscricaoEstadual || ''
       })
     } else {
-      setFormData(defaultForm())
+      const nome = (initialNome || '').trim()
+      setFormData({ ...defaultForm(), nome })
     }
-  }, [cliente])
+  }, [cliente, initialNome])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
