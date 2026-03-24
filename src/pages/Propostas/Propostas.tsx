@@ -10,6 +10,7 @@ import PropostaPorPrompt from '../../components/PropostaPorPrompt/PropostaPorPro
 import type { ResultadoPromptProposta } from '../../components/PropostaPorPrompt/PropostaPorPrompt'
 import { apiService } from '../../services/apiService'
 import { exportService } from '../../services/exportService'
+import { clienteAreaService, PropostaClienteInbox } from '../../services/clienteAreaService'
 import './Propostas.scss'
 
 interface Checkpoint {
@@ -70,6 +71,7 @@ interface Proposta {
 }
 
 const Propostas = () => {
+  const RETORNOS_SEEN_KEY = 'ia_b2b_retorno_seen_at'
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<'propostas' | 'tabelas'>('tabelas')
   
@@ -88,6 +90,18 @@ const Propostas = () => {
   const [viewingTabela, setViewingTabela] = useState<any | null>(null)
   const [showClienteSelecao, setShowClienteSelecao] = useState(false)
   const [tabelaParaSelecao, setTabelaParaSelecao] = useState<{ tabela: any; cliente: string } | null>(null)
+  const [retornosRepresentante, setRetornosRepresentante] = useState<PropostaClienteInbox[]>([])
+  const [retornosNovosCount, setRetornosNovosCount] = useState(0)
+
+  const atualizarRetornosRepresentante = () => {
+    const retornos = clienteAreaService.listarRetornosRepresentante()
+    setRetornosRepresentante(retornos)
+
+    const seenAt = localStorage.getItem(RETORNOS_SEEN_KEY)
+    const seenTime = seenAt ? new Date(seenAt).getTime() : 0
+    const novos = retornos.filter((r) => new Date(r.decisaoData || r.dataEnvio).getTime() > seenTime)
+    setRetornosNovosCount(novos.length)
+  }
 
   useEffect(() => {
     if (activeTab === 'propostas') {
@@ -95,8 +109,41 @@ const Propostas = () => {
     } else {
       fetchTabelas()
       fetchPropostas() // para exibir "clientes que retornaram" na aba Tabelas
+      atualizarRetornosRepresentante()
     }
   }, [activeTab])
+
+  // Atualiza notificações/status em tempo real na aba de Tabelas
+  useEffect(() => {
+    if (activeTab !== 'tabelas') return
+
+    const onStorage = () => atualizarRetornosRepresentante()
+    window.addEventListener('storage', onStorage)
+
+    const intervalId = window.setInterval(() => {
+      atualizarRetornosRepresentante()
+    }, 2000)
+
+    return () => {
+      window.removeEventListener('storage', onStorage)
+      window.clearInterval(intervalId)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab])
+
+  const decisaoPorTabela = retornosRepresentante.reduce<Record<string, 'aceita_preco' | 'recusada_preco'>>((acc, r) => {
+    if (!r.tabelaId || !r.decisaoCliente) return acc
+    const atual = acc[r.tabelaId]
+    if (!atual) {
+      acc[r.tabelaId] = r.decisaoCliente
+      return acc
+    }
+    // Se houver qualquer recusa, prioriza sinalizar recusada
+    if (atual !== 'recusada_preco' && r.decisaoCliente === 'recusada_preco') {
+      acc[r.tabelaId] = 'recusada_preco'
+    }
+    return acc
+  }, {})
 
   // Clientes que já retornaram (geraram proposta) por tabela
   const clientesRetornadosPorTabela = propostas
@@ -279,12 +326,54 @@ const Propostas = () => {
       const clientesParaEnviar = clientesParaEnvio.length > 0 ? clientesParaEnvio : undefined
       await apiService.enviarTabelaParaClientes(tabela.id, clientesParaEnviar)
 
+      // Enriquecer produtos com dados do cadastro (apresentação, IPI etc.)
+      // e preservar desconto da tabela para a simulação de negociação do cliente.
+      let tabelaComDetalhes = tabela
+      try {
+        const catalogo = await apiService.getProdutos()
+        if (Array.isArray(catalogo)) {
+          const produtosEnriquecidos = (tabela.produtos || []).map((p: any) => {
+            const match = catalogo.find((c: any) => {
+              const byCode =
+                p.produtoCodigo &&
+                c?.produtoCodigo &&
+                String(p.produtoCodigo).trim().toLowerCase() === String(c.produtoCodigo).trim().toLowerCase()
+              if (byCode) return true
+
+              const nomeTabela = String(p.produto || '').trim().toLowerCase()
+              const nomeCatalogo = String(c?.produto || '').trim().toLowerCase()
+              const marcaTabela = String(p.marca || '').trim().toLowerCase()
+              const marcaCatalogo = String(c?.marca || '').trim().toLowerCase()
+              return nomeTabela && nomeCatalogo && marcaTabela === marcaCatalogo && nomeTabela === nomeCatalogo
+            })
+
+            return {
+              ...p,
+              aliquotaIpi: p.aliquotaIpi ?? match?.aliquotaIpi,
+              apresentacaoTipo: p.apresentacaoTipo ?? match?.apresentacaoTipo,
+              apresentacaoUrl: p.apresentacaoUrl ?? match?.apresentacaoUrl,
+              apresentacaoNome: p.apresentacaoNome ?? match?.apresentacaoNome
+            }
+          })
+
+          tabelaComDetalhes = {
+            ...tabela,
+            produtos: produtosEnriquecidos
+          }
+        }
+      } catch {
+        // fallback silencioso: usa a tabela como está
+      }
+
       const clientes = tabela.clientes || (tabela.cliente ? [tabela.cliente] : [])
       for (const cliente of clientes) {
         const clienteNome = typeof cliente === 'string' ? cliente : cliente.nome
         const clientInfo = typeof cliente === 'object' && cliente ? { email: cliente.email, telefone: cliente.telefone } : undefined
-        exportService.exportTabelaProdutosToPDF(tabela, clienteNome, clientInfo)
-        exportService.exportTabelaProdutosToExcel(tabela, clienteNome)
+        exportService.exportTabelaProdutosToPDF(tabelaComDetalhes, clienteNome, clientInfo)
+        exportService.exportTabelaProdutosToExcel(tabelaComDetalhes, clienteNome)
+
+        // Simulação da negociação: proposta enviada aparece na Área do Cliente
+        clienteAreaService.registrarEnvio(tabelaComDetalhes, cliente)
       }
       
       alert('Tabela enviada com sucesso! Os arquivos PDF e Excel foram gerados.')
@@ -536,6 +625,76 @@ const Propostas = () => {
             />
           ) : (
             <div className="propostas-list-section">
+              {retornosNovosCount > 0 && (
+                <div className="propostas-notificacao-retorno">
+                  <div>
+                    <strong>{retornosNovosCount} novo(s) retorno(s) de cliente</strong> com status atualizado
+                    (aceita/recusada).
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => {
+                      localStorage.setItem(RETORNOS_SEEN_KEY, new Date().toISOString())
+                      setRetornosNovosCount(0)
+                    }}
+                  >
+                    Marcar notificação como lida
+                  </button>
+                </div>
+              )}
+              {retornosRepresentante.length > 0 && (
+                <div className="card" style={{ marginBottom: '1rem' }}>
+                  <div className="card-header">
+                    <h3 className="card-title">Retornos dos clientes</h3>
+                  </div>
+                  <div style={{ padding: '1rem' }}>
+                    {retornosRepresentante.map((r) => (
+                      <div
+                        key={r.id}
+                        style={{
+                          border: '1px solid #e2e8f0',
+                          borderRadius: '8px',
+                          padding: '0.75rem',
+                          marginBottom: '0.75rem',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          gap: '1rem'
+                        }}
+                      >
+                        <div>
+                          <div style={{ fontWeight: 600 }}>
+                            {r.cliente} · {r.tabelaNome}
+                          </div>
+                          <div style={{ fontSize: '0.875rem', color: '#475569' }}>
+                            {r.decisaoCliente === 'aceita_preco'
+                              ? 'Aceitou a proposta com o preço enviado'
+                              : 'Não aceitou a proposta com o preço enviado'}
+                          </div>
+                          {r.decisaoObservacao && (
+                            <div style={{ fontSize: '0.875rem', color: '#334155', marginTop: '0.25rem' }}>
+                              Obs.: {r.decisaoObservacao}
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <button
+                            type="button"
+                            className="btn btn-secondary btn-sm"
+                            onClick={() => {
+                              clienteAreaService.limparRetornoRepresentante(r.id)
+                              const atualizados = clienteAreaService.listarRetornosRepresentante()
+                              setRetornosRepresentante(atualizados)
+                            }}
+                          >
+                            Arquivar
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               <PropostaPorPrompt
                 onSuccess={handlePropostaPorPromptSuccess}
                 onError={(msg) => alert(msg)}
@@ -544,6 +703,7 @@ const Propostas = () => {
                 tabelas={tabelas}
                 loading={loadingTabelas}
                 clientesRetornados={clientesRetornadosPorTabela}
+                decisaoPorTabela={decisaoPorTabela}
                 onEdit={handleEditTabela}
                 onEnviar={handleEnviarTabela}
                 onGerarProposta={handleGerarProposta}

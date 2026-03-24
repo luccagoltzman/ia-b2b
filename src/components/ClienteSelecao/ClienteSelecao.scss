@@ -51,15 +51,10 @@
 }
 
 .cliente-selecao-content {
-  display: grid;
-  grid-template-columns: 1fr 320px;
+  display: flex;
+  flex-direction: column;
   gap: 1.5rem;
   padding: 1.5rem;
-  align-items: start;
-
-  @media (max-width: 900px) {
-    grid-template-columns: 1fr;
-  }
 }
 
 .cliente-selecao-produtos {
@@ -108,6 +103,16 @@
       color: $text-primary;
     }
   }
+}
+
+.cliente-selecao-apresentacao-btn {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.cliente-selecao-apresentacao-none {
+  color: $text-light;
 }
 
 .cliente-selecao-resumo {

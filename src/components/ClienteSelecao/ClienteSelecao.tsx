@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react'
-import { apiService } from '../../services/apiService'
+import { useState } from 'react'
 import { exportService } from '../../services/exportService'
 import './ClienteSelecao.scss'
 
@@ -15,6 +14,9 @@ interface ProdutoTabela {
   aliquotaIpi?: number
   desconto?: number
   descontoTipo?: 'percentual' | 'valor'
+  apresentacaoTipo?: 'imagem' | 'pdf'
+  apresentacaoUrl?: string
+  apresentacaoNome?: string
 }
 
 interface ProdutoSelecionado {
@@ -121,6 +123,11 @@ const ClienteSelecao = ({ tabela, cliente, onGerarProposta, onCancel }: ClienteS
     }).format(value)
   }
 
+  const handleAbrirApresentacao = (produto: ProdutoTabela) => {
+    if (!produto.apresentacaoUrl) return
+    window.open(produto.apresentacaoUrl, '_blank', 'noopener,noreferrer')
+  }
+
   const produtosMarcados = tabela.produtos.filter(p => produtosSelecionados.has(p.id))
   const valorTotal = produtosMarcados.reduce((total, produto) => {
     return total + calcularValorProduto(produto)
@@ -157,6 +164,7 @@ const ClienteSelecao = ({ tabela, cliente, onGerarProposta, onCancel }: ClienteS
                   <th>Produto</th>
                   <th>Código</th>
                   <th>Marca</th>
+                  <th>Apresentação</th>
                   <th>Quantidade</th>
                   <th>Unidade</th>
                   <th>Valor Unitário</th>
@@ -181,6 +189,19 @@ const ClienteSelecao = ({ tabela, cliente, onGerarProposta, onCancel }: ClienteS
                       <td>{produto.produto}</td>
                       <td>{produto.produtoCodigo || '-'}</td>
                       <td>{produto.marca}</td>
+                      <td>
+                        {produto.apresentacaoUrl ? (
+                          <button
+                            type="button"
+                            className="btn btn-secondary btn-sm cliente-selecao-apresentacao-btn"
+                            onClick={() => handleAbrirApresentacao(produto)}
+                          >
+                            {produto.apresentacaoTipo === 'pdf' ? '📄 Ver PDF' : '🖼️ Ver imagem'}
+                          </button>
+                        ) : (
+                          <span className="cliente-selecao-apresentacao-none">—</span>
+                        )}
+                      </td>
                       <td style={{ textAlign: 'center' }}>{produto.quantidade}</td>
                       <td>{produto.unidadeMedida}</td>
                       <td>{formatCurrency(produto.valorUnitario)}</td>

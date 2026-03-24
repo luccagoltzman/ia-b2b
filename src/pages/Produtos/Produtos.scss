@@ -1,0 +1,21 @@
+@use '../../styles/variables' as *;
+
+.produtos-page {
+  &-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: $spacing-xl;
+
+    @media (max-width: $breakpoint-md) {
+      flex-direction: column;
+      gap: $spacing-md;
+    }
+  }
+
+  &-form-section,
+  &-list-section {
+    width: 100%;
+  }
+}
+

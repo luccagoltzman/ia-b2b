@@ -269,6 +269,86 @@ export const apiService = {
     return response.data
   },
 
+  // Produtos (cadastro)
+  async getProdutos() {
+    const response = await api.get('/produtos')
+    return response.data
+  },
+
+  async getProduto(id: string) {
+    const response = await api.get(`/produtos/${id}`)
+    return response.data
+  },
+
+  async createProduto(dados: any) {
+    const hasFile = dados?.apresentacaoArquivo instanceof File
+    const remove = !!dados?.apresentacaoRemover
+
+    if (hasFile || remove) {
+      const formData = new FormData()
+      formData.append('produto', dados.produto ?? '')
+      if (dados.produtoCodigo !== undefined) formData.append('produtoCodigo', dados.produtoCodigo ?? '')
+      formData.append('marca', dados.marca ?? '')
+      if (dados.categoria !== undefined) formData.append('categoria', dados.categoria ?? '')
+      formData.append('unidadeMedida', dados.unidadeMedida ?? 'unidade')
+      formData.append('valorUnitario', String(dados.valorUnitario ?? 0))
+      if (dados.aliquotaIpi !== undefined) formData.append('aliquotaIpi', String(dados.aliquotaIpi ?? 0))
+
+      if (remove) formData.append('apresentacaoRemover', 'true')
+      if (hasFile) {
+        formData.append('apresentacaoArquivo', dados.apresentacaoArquivo)
+      }
+
+      const response = await api.post('/produtos', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      return response.data
+    }
+
+    const payload = { ...dados }
+    delete payload.apresentacaoArquivo
+    delete payload.apresentacaoRemover
+
+    const response = await api.post('/produtos', payload)
+    return response.data
+  },
+
+  async updateProduto(id: string, dados: any) {
+    const hasFile = dados?.apresentacaoArquivo instanceof File
+    const remove = !!dados?.apresentacaoRemover
+
+    if (hasFile || remove) {
+      const formData = new FormData()
+      formData.append('produto', dados.produto ?? '')
+      if (dados.produtoCodigo !== undefined) formData.append('produtoCodigo', dados.produtoCodigo ?? '')
+      formData.append('marca', dados.marca ?? '')
+      if (dados.categoria !== undefined) formData.append('categoria', dados.categoria ?? '')
+      formData.append('unidadeMedida', dados.unidadeMedida ?? 'unidade')
+      formData.append('valorUnitario', String(dados.valorUnitario ?? 0))
+      if (dados.aliquotaIpi !== undefined) formData.append('aliquotaIpi', String(dados.aliquotaIpi ?? 0))
+
+      if (remove) formData.append('apresentacaoRemover', 'true')
+      if (hasFile) formData.append('apresentacaoArquivo', dados.apresentacaoArquivo)
+
+      const response = await api.put(`/produtos/${id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      return response.data
+    }
+
+    const payload = { ...dados }
+    delete payload.apresentacaoArquivo
+    delete payload.apresentacaoRemover
+
+    const response = await api.put(`/produtos/${id}`, payload)
+    return response.data
+  },
+
+  async deleteProduto(id: string) {
+    const response = await api.delete(`/produtos/${id}`)
+    return response.data
+  },
+
   // Tabelas de Produtos
   async getTabelasProdutos() {
     const response = await api.get('/tabelas-produtos')

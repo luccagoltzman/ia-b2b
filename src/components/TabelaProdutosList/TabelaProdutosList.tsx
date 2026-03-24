@@ -37,6 +37,7 @@ interface TabelaProdutosListProps {
   tabelas: TabelaProdutos[]
   loading: boolean
   clientesRetornados?: Record<string, string[]>
+  decisaoPorTabela?: Record<string, 'aceita_preco' | 'recusada_preco'>
   onEdit: (tabela: TabelaProdutos) => void
   onView?: (tabela: TabelaProdutos) => void
   onEnviar?: (tabela: TabelaProdutos) => void
@@ -49,6 +50,7 @@ const TabelaProdutosList = ({
   tabelas, 
   loading, 
   clientesRetornados = {},
+  decisaoPorTabela = {},
   onEdit, 
   onView, 
   onEnviar,
@@ -72,12 +74,22 @@ const TabelaProdutosList = ({
     return !!(cliente?.email || cliente?.telefone)
   }
 
-  const getStatusBadge = (status?: string, temRetornos?: boolean) => {
+  const getStatusBadge = (
+    status?: string,
+    temRetornos?: boolean,
+    decisaoCliente?: 'aceita_preco' | 'recusada_preco'
+  ) => {
     const statusMap: Record<string, { label: string; class: string }> = {
       rascunho: { label: 'Rascunho', class: 'info' },
       enviada: { label: 'Enviada', class: 'success' },
       aguardando_resposta: { label: 'Aguardando Resposta', class: 'warning' },
       proposta_gerada: { label: 'Proposta Gerada', class: 'success' }
+    }
+    if (decisaoCliente === 'aceita_preco') {
+      return { label: 'Aceita pelo Cliente', class: 'success' as const }
+    }
+    if (decisaoCliente === 'recusada_preco') {
+      return { label: 'Recusada pelo Cliente', class: 'error' as const }
     }
     const base = statusMap[status || 'rascunho'] || { label: status || 'Rascunho', class: 'info' }
     if (temRetornos && status !== 'proposta_gerada') {
@@ -137,7 +149,8 @@ const TabelaProdutosList = ({
             {tabelas.map((tabela) => {
               const retornos = clientesRetornados[tabela.id] || []
               const temRetornos = retornos.length > 0
-              const status = getStatusBadge(tabela.status, temRetornos)
+              const decisao = decisaoPorTabela[tabela.id]
+              const status = getStatusBadge(tabela.status, temRetornos, decisao)
               const clientesCount = tabela.clientes?.length || (tabela.cliente ? 1 : 0)
               return (
                 <tr key={tabela.id}>
@@ -231,7 +244,8 @@ const TabelaProdutosList = ({
         {tabelas.map((tabela) => {
           const retornos = clientesRetornados[tabela.id] || []
           const temRetornos = retornos.length > 0
-          const status = getStatusBadge(tabela.status, temRetornos)
+          const decisao = decisaoPorTabela[tabela.id]
+          const status = getStatusBadge(tabela.status, temRetornos, decisao)
           const clientesCount = tabela.clientes?.length || (tabela.cliente ? 1 : 0)
           return (
             <div key={tabela.id} className="tabela-card">

@@ -8,6 +8,8 @@ import PosVenda from './pages/PosVenda/PosVenda'
 import Configuracoes from './pages/Configuracoes/Configuracoes'
 import Clientes from './pages/Clientes/Clientes'
 import SimularRetorno from './pages/SimularRetorno/SimularRetorno'
+import Produtos from './pages/Produtos/Produtos'
+import AreaCliente from './pages/AreaCliente/AreaCliente'
 
 function App() {
   return (
@@ -21,6 +23,8 @@ function App() {
           <Route path="/pos-venda" element={<PosVenda />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
           <Route path="/clientes" element={<Clientes />} />
+          <Route path="/produtos" element={<Produtos />} />
+          <Route path="/area-cliente" element={<AreaCliente />} />
           <Route path="/simular-retorno" element={<SimularRetorno />} />
         </Routes>
       </Layout>

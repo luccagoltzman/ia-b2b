@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { apiService } from '../../services/apiService'
+import { useNavigate } from 'react-router-dom'
 import './TabelaProdutosForm.scss'
 
 interface ProdutoTabela {
@@ -12,6 +13,9 @@ interface ProdutoTabela {
   quantidade: number // Quantidade já definida pelo representante
   valorUnitario: number
   aliquotaIpi?: number
+  apresentacaoTipo?: 'imagem' | 'pdf'
+  apresentacaoUrl?: string
+  apresentacaoNome?: string
   desconto?: number // Desconto interno (não aparece para o cliente)
   descontoTipo?: 'percentual' | 'valor'
 }
@@ -66,6 +70,20 @@ interface ClienteCadastrado {
   inscricaoEstadual?: string
 }
 
+interface ProdutoCatalogo {
+  id: string
+  produto: string
+  produtoCodigo?: string
+  marca: string
+  categoria?: string
+  unidadeMedida: string
+  valorUnitario: number
+  aliquotaIpi?: number
+  apresentacaoTipo?: 'imagem' | 'pdf'
+  apresentacaoUrl?: string
+  apresentacaoNome?: string
+}
+
 const defaultNovoCliente = (): Cliente => ({
   nome: '',
   email: '',
@@ -93,6 +111,8 @@ const TabelaProdutosForm = ({ tabela, onSubmit, onCancel }: TabelaProdutosFormPr
   })
   const [loading, setLoading] = useState(false)
   const [clientesCadastrados, setClientesCadastrados] = useState<ClienteCadastrado[]>([])
+  const [produtosCadastrados, setProdutosCadastrados] = useState<ProdutoCatalogo[]>([])
+  const [produtoSelecionadoId, setProdutoSelecionadoId] = useState<string>('')
   const [novoCliente, setNovoCliente] = useState<Cliente>(defaultNovoCliente())
   const [novoProduto, setNovoProduto] = useState<Partial<ProdutoTabela>>({
     produto: '',
@@ -104,7 +124,10 @@ const TabelaProdutosForm = ({ tabela, onSubmit, onCancel }: TabelaProdutosFormPr
     valorUnitario: 0,
     aliquotaIpi: 0,
     desconto: 0,
-    descontoTipo: 'percentual'
+    descontoTipo: 'percentual',
+    apresentacaoTipo: undefined,
+    apresentacaoUrl: undefined,
+    apresentacaoNome: undefined
   })
 
   useEffect(() => {
@@ -135,11 +158,26 @@ const TabelaProdutosForm = ({ tabela, onSubmit, onCancel }: TabelaProdutosFormPr
     return () => { cancelled = true }
   }, [])
 
+  // Carregar produtos cadastrados para seleção na tabela
+  useEffect(() => {
+    let cancelled = false
+    apiService.getProdutos()
+      .then((data: any) => {
+        if (!cancelled && Array.isArray(data)) {
+          setProdutosCadastrados(data)
+        }
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   const handlePuxarCliente = (clienteId: string) => {
     if (!clienteId) return
     const c = clientesCadastrados.find(x => x.id === clienteId)
     if (c) {
-      setNovoCliente({
+      const clientePuxado: Cliente = {
         nome: c.nome,
         email: c.email || '',
         telefone: c.telefone || '',
@@ -152,8 +190,71 @@ const TabelaProdutosForm = ({ tabela, onSubmit, onCancel }: TabelaProdutosFormPr
         estado: c.estado || '',
         cep: c.cep || '',
         inscricaoEstadual: c.inscricaoEstadual || ''
+      }
+
+      // Preenche o formulário para eventual edição manual
+      setNovoCliente(clientePuxado)
+
+      // E já adiciona na lista (fluxo mais rápido ao puxar cadastrado)
+      const jaExiste = (formData.clientes || []).some((cliente) => {
+        if (typeof cliente === 'string') return cliente.trim().toLowerCase() === clientePuxado.nome.trim().toLowerCase()
+        return (
+          cliente.nome.trim().toLowerCase() === clientePuxado.nome.trim().toLowerCase() &&
+          (cliente.email || '').trim().toLowerCase() === (clientePuxado.email || '').trim().toLowerCase()
+        )
       })
+
+      if (!jaExiste) {
+        setFormData(prev => ({
+          ...prev,
+          clientes: [...(prev.clientes || []), clientePuxado]
+        }))
+      }
     }
+  }
+
+  const handlePuxarProduto = (produtoId: string) => {
+    if (!produtoId) {
+      setProdutoSelecionadoId('')
+      setNovoProduto({
+        produto: '',
+        produtoCodigo: '',
+        marca: '',
+        categoria: '',
+        unidadeMedida: 'unidade',
+        quantidade: 0,
+        valorUnitario: 0,
+        aliquotaIpi: 0,
+        desconto: 0,
+      descontoTipo: 'percentual',
+      apresentacaoTipo: undefined,
+      apresentacaoUrl: undefined,
+      apresentacaoNome: undefined
+      })
+      return
+    }
+
+    const p = produtosCadastrados.find(x => x.id === produtoId)
+    if (!p) return
+
+    setProdutoSelecionadoId(produtoId)
+    setNovoProduto((prev) => ({
+      ...prev,
+      produto: p.produto,
+      produtoCodigo: p.produtoCodigo || '',
+      marca: p.marca,
+      categoria: p.categoria || '',
+      unidadeMedida: p.unidadeMedida || 'unidade',
+      valorUnitario: Number(p.valorUnitario ?? 0),
+      aliquotaIpi: Number(p.aliquotaIpi ?? 0),
+      apresentacaoTipo: p.apresentacaoTipo,
+      apresentacaoUrl: p.apresentacaoUrl,
+      apresentacaoNome: p.apresentacaoNome,
+      // descontar por linha é interno da tabela; zera ao trocar produto
+      desconto: prev.desconto || 0,
+      descontoTipo: prev.descontoTipo || 'percentual',
+      quantidade: prev.quantidade || 0
+    }))
   }
 
   const handleAddCliente = () => {
@@ -188,7 +289,14 @@ const TabelaProdutosForm = ({ tabela, onSubmit, onCancel }: TabelaProdutosFormPr
   }
 
   const handleAddProduto = () => {
-    if (novoProduto.produto && novoProduto.marca && novoProduto.valorUnitario && novoProduto.quantidade) {
+    if (
+      novoProduto.produto &&
+      novoProduto.marca &&
+      novoProduto.valorUnitario !== undefined &&
+      novoProduto.valorUnitario !== null &&
+      typeof novoProduto.quantidade === 'number' &&
+      novoProduto.quantidade > 0
+    ) {
       const produto: ProdutoTabela = {
         id: Date.now().toString(),
         produto: novoProduto.produto,
@@ -196,28 +304,26 @@ const TabelaProdutosForm = ({ tabela, onSubmit, onCancel }: TabelaProdutosFormPr
         marca: novoProduto.marca,
         categoria: novoProduto.categoria,
         unidadeMedida: novoProduto.unidadeMedida || 'unidade',
-        quantidade: parseFloat(novoProduto.quantidade.toString()),
-        valorUnitario: parseFloat(novoProduto.valorUnitario.toString()),
-        aliquotaIpi: novoProduto.aliquotaIpi ? parseFloat(novoProduto.aliquotaIpi.toString()) : 0,
-        desconto: novoProduto.desconto ? parseFloat(novoProduto.desconto.toString()) : 0,
+        quantidade: Number(novoProduto.quantidade),
+        valorUnitario: Number(novoProduto.valorUnitario),
+        aliquotaIpi: novoProduto.aliquotaIpi ? Number(novoProduto.aliquotaIpi) : 0,
+        apresentacaoTipo: novoProduto.apresentacaoTipo,
+        apresentacaoUrl: novoProduto.apresentacaoUrl,
+        apresentacaoNome: novoProduto.apresentacaoNome,
+        desconto: novoProduto.desconto ? Number(novoProduto.desconto) : 0,
         descontoTipo: novoProduto.descontoTipo || 'percentual'
       }
       setFormData(prev => ({
         ...prev,
         produtos: [...prev.produtos, produto]
       }))
-      setNovoProduto({
-        produto: '',
-        produtoCodigo: '',
-        marca: '',
-        categoria: '',
-        unidadeMedida: 'unidade',
+      // Mantém o produto selecionado para facilitar adicionar múltiplas linhas
+      setNovoProduto((prev) => ({
+        ...prev,
         quantidade: 0,
-        valorUnitario: 0,
-        aliquotaIpi: 0,
         desconto: 0,
-        descontoTipo: 'percentual'
-      })
+        descontoTipo: prev.descontoTipo || 'percentual'
+      }))
     }
   }
 
@@ -445,6 +551,15 @@ const TabelaProdutosForm = ({ tabela, onSubmit, onCancel }: TabelaProdutosFormPr
           <small style={{ color: '#64748b', fontSize: '0.75rem', display: 'block', marginTop: '0.5rem' }}>
             Ao puxar um cliente cadastrado, todos os dados comerciais são preenchidos. Você pode editar antes de adicionar.
           </small>
+          <div style={{ marginTop: '0.75rem' }}>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={handleAddCliente}
+            >
+              + Adicionar cliente na proposta
+            </button>
+          </div>
           {formData.clientes && formData.clientes.length > 0 && (
             <div className="tabela-clientes-list">
               {formData.clientes.map((cliente, index) => {
@@ -496,140 +611,104 @@ const TabelaProdutosForm = ({ tabela, onSubmit, onCancel }: TabelaProdutosFormPr
         <div className="tabela-form-section">
           <h4 className="tabela-form-section-title">Produtos *</h4>
           <div className="tabela-produtos-form">
-            <div className="tabela-form-row">
-              <div className="tabela-form-group">
-                <label className="tabela-form-label">Produto *</label>
-                <input
-                  type="text"
-                  className="input"
-                  value={novoProduto.produto || ''}
-                  onChange={(e) => setNovoProduto({ ...novoProduto, produto: e.target.value })}
-                  placeholder="Nome do produto"
-                />
+              <div className="tabela-form-row">
+                <div className="tabela-form-group">
+                  <label className="tabela-form-label">Produto *</label>
+                  {produtosCadastrados.length > 0 ? (
+                    <select
+                      className="input"
+                      value={produtoSelecionadoId}
+                      onChange={(e) => handlePuxarProduto(e.target.value)}
+                      aria-label="Selecionar produto cadastrado"
+                    >
+                      <option value="">— Selecione um produto —</option>
+                      {produtosCadastrados.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.produto} {p.marca ? `(${p.marca})` : ''}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div className="text-secondary" style={{ marginTop: '0.25rem' }}>
+                      Nenhum produto cadastrado ainda.
+                    </div>
+                  )}
+                </div>
+                <div className="tabela-form-group" style={{ display: 'flex', alignItems: 'flex-end' }}>
+                  <button type="button" className="btn btn-secondary" onClick={() => navigate('/produtos')}>
+                    + Cadastrar novo produto
+                  </button>
+                </div>
               </div>
-              <div className="tabela-form-group">
-                <label className="tabela-form-label">Código</label>
-                <input
-                  type="text"
-                  className="input"
-                  value={novoProduto.produtoCodigo || ''}
-                  onChange={(e) => setNovoProduto({ ...novoProduto, produtoCodigo: e.target.value })}
-                  placeholder="Código do produto"
-                />
-              </div>
-              <div className="tabela-form-group">
-                <label className="tabela-form-label">Marca *</label>
-                <input
-                  type="text"
-                  className="input"
-                  value={novoProduto.marca || ''}
-                  onChange={(e) => setNovoProduto({ ...novoProduto, marca: e.target.value })}
-                  placeholder="Marca"
-                />
-              </div>
-            </div>
-            <div className="tabela-form-row">
-              <div className="tabela-form-group">
-                <label className="tabela-form-label">Categoria</label>
-                <input
-                  type="text"
-                  className="input"
-                  value={novoProduto.categoria || ''}
-                  onChange={(e) => setNovoProduto({ ...novoProduto, categoria: e.target.value })}
-                  placeholder="Categoria"
-                />
-              </div>
-              <div className="tabela-form-group">
-                <label className="tabela-form-label">Unidade de Medida</label>
-                <select
-                  className="input"
-                  value={novoProduto.unidadeMedida || 'unidade'}
-                  onChange={(e) => setNovoProduto({ ...novoProduto, unidadeMedida: e.target.value })}
-                >
-                  <option value="unidade">Unidade</option>
-                  <option value="kg">Quilograma (kg)</option>
-                  <option value="g">Grama (g)</option>
-                  <option value="litro">Litro (L)</option>
-                  <option value="ml">Mililitro (mL)</option>
-                  <option value="caixa">Caixa</option>
-                  <option value="pacote">Pacote</option>
-                  <option value="fardo">Fardo</option>
-                </select>
-              </div>
-              <div className="tabela-form-group">
-                <label className="tabela-form-label">Quantidade *</label>
-                <input
-                  type="number"
-                  className="input"
-                  value={novoProduto.quantidade || ''}
-                  onChange={(e) => setNovoProduto({ ...novoProduto, quantidade: parseFloat(e.target.value) || 0 })}
-                  step="1"
-                  min="1"
-                  placeholder="0"
-                />
-              </div>
-              <div className="tabela-form-group">
-                <label className="tabela-form-label">Valor Unitário (R$) *</label>
-                <input
-                  type="number"
-                  className="input"
-                  value={novoProduto.valorUnitario || ''}
-                  onChange={(e) => setNovoProduto({ ...novoProduto, valorUnitario: parseFloat(e.target.value) || 0 })}
-                  step="0.01"
-                  min="0"
-                  placeholder="0.00"
-                />
-              </div>
-            </div>
-            <div className="tabela-form-row">
-              <div className="tabela-form-group">
-                <label className="tabela-form-label">Alíquota IPI (%)</label>
-                <input
-                  type="number"
-                  className="input"
-                  value={novoProduto.aliquotaIpi || ''}
-                  onChange={(e) => setNovoProduto({ ...novoProduto, aliquotaIpi: parseFloat(e.target.value) || 0 })}
-                  step="0.01"
-                  min="0"
-                  max="100"
-                  placeholder="0.00"
-                />
-              </div>
-              <div className="tabela-form-group">
-                <label className="tabela-form-label">Desconto (interno)</label>
-                <div style={{ display: 'flex', gap: '8px' }}>
+
+              <div className="tabela-form-row">
+                <div className="tabela-form-group">
+                  <label className="tabela-form-label">Quantidade *</label>
                   <input
                     type="number"
                     className="input"
-                    value={novoProduto.desconto || ''}
-                    onChange={(e) => setNovoProduto({ ...novoProduto, desconto: parseFloat(e.target.value) || 0 })}
-                    step="0.01"
-                    min="0"
+                    value={novoProduto.quantidade || ''}
+                    onChange={(e) => setNovoProduto({ ...novoProduto, quantidade: parseFloat(e.target.value) || 0 })}
+                    step="1"
+                    min="1"
                     placeholder="0"
-                    style={{ flex: 1 }}
+                    disabled={!produtoSelecionadoId}
                   />
-                  <select
-                    className="input"
-                    value={novoProduto.descontoTipo || 'percentual'}
-                    onChange={(e) => setNovoProduto({ ...novoProduto, descontoTipo: e.target.value as 'percentual' | 'valor' })}
-                    style={{ width: '120px' }}
-                  >
-                    <option value="percentual">%</option>
-                    <option value="valor">R$</option>
-                  </select>
                 </div>
-                <small style={{ color: '#64748b', fontSize: '0.75rem' }}>
-                  Este desconto não aparecerá na tabela enviada ao cliente, apenas na proposta final
-                </small>
+                <div className="tabela-form-group">
+                  <label className="tabela-form-label">Detalhes do produto</label>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', paddingTop: '0.2rem' }}>
+                    <div>
+                      <strong>Valor unitário:</strong>{' '}
+                      {novoProduto.valorUnitario !== undefined
+                        ? `R$ ${Number(novoProduto.valorUnitario).toFixed(2)}`
+                        : '—'}
+                    </div>
+                    <div>
+                      <strong>Unidade:</strong> {novoProduto.unidadeMedida || '—'}
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                      IPI: {novoProduto.aliquotaIpi !== undefined && novoProduto.aliquotaIpi !== null ? `${novoProduto.aliquotaIpi}%` : '—'}
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={handleAddProduto}
-            >
-              + Adicionar Produto
-            </button>
+
+              <div className="tabela-form-row">
+                <div className="tabela-form-group">
+                  <label className="tabela-form-label">Desconto (interno)</label>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <input
+                      type="number"
+                      className="input"
+                      value={novoProduto.desconto || ''}
+                      onChange={(e) => setNovoProduto({ ...novoProduto, desconto: parseFloat(e.target.value) || 0 })}
+                      step="0.01"
+                      min="0"
+                      placeholder="0"
+                      style={{ flex: 1 }}
+                      disabled={!produtoSelecionadoId}
+                    />
+                    <select
+                      className="input"
+                      value={novoProduto.descontoTipo || 'percentual'}
+                      onChange={(e) => setNovoProduto({ ...novoProduto, descontoTipo: e.target.value as 'percentual' | 'valor' })}
+                      style={{ width: '120px' }}
+                      disabled={!produtoSelecionadoId}
+                    >
+                      <option value="percentual">%</option>
+                      <option value="valor">R$</option>
+                    </select>
+                  </div>
+                  <small style={{ color: '#64748b', fontSize: '0.75rem' }}>
+                    Este desconto não aparecerá na tabela enviada ao cliente, apenas na proposta final
+                  </small>
+                </div>
+              </div>
+
+              <button type="button" className="btn btn-secondary" onClick={handleAddProduto} disabled={!produtoSelecionadoId}>
+                + Adicionar Produto
+              </button>
           </div>
 
           {formData.produtos.length > 0 && (
@@ -644,6 +723,7 @@ const TabelaProdutosForm = ({ tabela, onSubmit, onCancel }: TabelaProdutosFormPr
                     <th>Unidade</th>
                     <th>Valor Unitário</th>
                     <th>Valor Total</th>
+                    <th>Apresentação</th>
                     <th>Ações</th>
                   </tr>
                 </thead>
@@ -659,6 +739,15 @@ const TabelaProdutosForm = ({ tabela, onSubmit, onCancel }: TabelaProdutosFormPr
                         <td>{produto.unidadeMedida}</td>
                         <td>R$ {produto.valorUnitario.toFixed(2)}</td>
                         <td>R$ {valorTotal.toFixed(2)}</td>
+                        <td>
+                          {produto.apresentacaoTipo
+                            ? produto.apresentacaoTipo === 'pdf'
+                              ? 'PDF'
+                              : 'Imagem'
+                            : produto.apresentacaoUrl
+                              ? 'Anexo'
+                              : '—'}
+                        </td>
                         <td>
                           <button
                             type="button"

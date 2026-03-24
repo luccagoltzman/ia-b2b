@@ -832,8 +832,18 @@ export const exportService = {
     doc.text(formatDate(tabela.dataVencimento), marginLeft + 22, yPos)
     yPos += 10
 
+    const presentationUrls: string[] = (tabela.produtos || []).map((p: any) => p?.apresentacaoUrl || '')
     const tableData = tabela.produtos.map((produto: any, index: number) => {
       const valorTotal = produto.valorUnitario * produto.quantidade
+      const tipoApresentacao =
+        produto.apresentacaoTipo
+          ? produto.apresentacaoTipo === 'pdf'
+            ? 'PDF'
+            : 'Imagem'
+          : produto.apresentacaoUrl
+            ? 'Anexo'
+            : '—'
+      const labelApresentacao = produto.apresentacaoUrl ? 'Abrir' : tipoApresentacao
       return [
         (index + 1).toString(),
         produto.produtoCodigo || '-',
@@ -842,13 +852,16 @@ export const exportService = {
         produto.quantidade.toString(),
         produto.unidadeMedida,
         formatCurrency(produto.valorUnitario),
-        formatCurrency(valorTotal)
+        formatCurrency(valorTotal),
+        labelApresentacao
       ]
     })
 
+    const presentationColumnIndex = 8 // última coluna (0-based) após inserir 'Apresentação'
+
     autoTable(doc, {
       startY: yPos,
-      head: [['#', 'Código', 'Produto', 'Marca', 'Quantidade', 'Unidade', 'Valor Unit.', 'Valor Total']],
+      head: [['#', 'Código', 'Produto', 'Marca', 'Quantidade', 'Unidade', 'Valor Unit.', 'Valor Total', 'Apresentação']],
       body: tableData,
       theme: 'striped',
       headStyles: {
@@ -860,7 +873,21 @@ export const exportService = {
       bodyStyles: { fontSize: 9, textColor: DOC.textPrimary },
       alternateRowStyles: { fillColor: DOC.rowAlt },
       styles: { cellPadding: 3, lineColor: DOC.border, lineWidth: 0.3 },
-      margin: { left: marginLeft, right: marginRight }
+      margin: { left: marginLeft, right: marginRight },
+      didDrawCell: (data: any) => {
+        // Inserir link clicável para apresentação quando existir URL
+        if (
+          data.section === 'body' &&
+          data.column?.index === presentationColumnIndex &&
+          data.row?.index !== undefined
+        ) {
+          const rowIndex = data.row.index
+          const url = presentationUrls[rowIndex]
+          if (url) {
+            doc.link(data.cell.x, data.cell.y, data.cell.width, data.cell.height, { url })
+          }
+        }
+      }
     })
 
     yPos = (doc as any).lastAutoTable.finalY + 14
@@ -902,9 +929,27 @@ export const exportService = {
     const wb = XLSX.utils.book_new()
     
     // Planilha de Produtos (SEM mostrar descontos - são internos)
-    const produtosHeaders = ['#', 'Código', 'Produto', 'Marca', 'Quantidade', 'Unidade', 'Valor Unitário', 'Valor Total']
+    const produtosHeaders = [
+      '#',
+      'Código',
+      'Produto',
+      'Marca',
+      'Quantidade',
+      'Unidade',
+      'Valor Unitário',
+      'Valor Total',
+      'Apresentação'
+    ]
     const produtosData = tabela.produtos.map((produto: any, index: number) => {
       const valorTotal = produto.valorUnitario * produto.quantidade
+      const tipoApresentacao =
+        produto.apresentacaoTipo
+          ? produto.apresentacaoTipo === 'pdf'
+            ? 'PDF'
+            : 'Imagem'
+          : produto.apresentacaoUrl
+            ? 'Anexo'
+            : ''
       return [
         index + 1,
         produto.produtoCodigo || '',
@@ -913,7 +958,8 @@ export const exportService = {
         produto.quantidade,
         produto.unidadeMedida,
         produto.valorUnitario,
-        valorTotal
+        valorTotal,
+        produto.apresentacaoUrl || tipoApresentacao
       ]
     })
     
@@ -977,8 +1023,15 @@ export const exportService = {
     }
     
     wsProdutos['!cols'] = [
-      { wch: 5 }, { wch: 15 }, { wch: 30 }, { wch: 15 },
-      { wch: 12 }, { wch: 12 }, { wch: 15 }, { wch: 15 }
+      { wch: 5 },
+      { wch: 15 },
+      { wch: 30 },
+      { wch: 15 },
+      { wch: 12 },
+      { wch: 12 },
+      { wch: 15 },
+      { wch: 15 },
+      { wch: 20 }
     ]
     
     XLSX.utils.book_append_sheet(wb, wsProdutos, 'Produtos')
@@ -1017,8 +1070,18 @@ export const exportService = {
     doc.text(`Data do retorno: ${new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`, marginLeft + 8, yPos + 14)
     yPos += 24
 
+    const presentationUrls: string[] = (produtosSelecionados || []).map((p: any) => p?.apresentacaoUrl || '')
     const tableData = produtosSelecionados.map((produto: any, index: number) => {
       const valorTotal = produto.valorUnitario * produto.quantidade
+      const tipoApresentacao =
+        produto.apresentacaoTipo
+          ? produto.apresentacaoTipo === 'pdf'
+            ? 'PDF'
+            : 'Imagem'
+          : produto.apresentacaoUrl
+            ? 'Anexo'
+            : '—'
+      const labelApresentacao = produto.apresentacaoUrl ? 'Abrir' : tipoApresentacao
       return [
         (index + 1).toString(),
         produto.produtoCodigo || '-',
@@ -1027,13 +1090,16 @@ export const exportService = {
         produto.quantidade.toString(),
         produto.unidadeMedida,
         formatCurrency(produto.valorUnitario),
-        formatCurrency(valorTotal)
+        formatCurrency(valorTotal),
+        labelApresentacao
       ]
     })
 
+    const presentationColumnIndex = 8 // última coluna
+
     autoTable(doc, {
       startY: yPos,
-      head: [['#', 'Código', 'Produto', 'Marca', 'Quantidade', 'Unidade', 'Valor Unit.', 'Valor Total']],
+      head: [['#', 'Código', 'Produto', 'Marca', 'Quantidade', 'Unidade', 'Valor Unit.', 'Valor Total', 'Apresentação']],
       body: tableData,
       theme: 'striped',
       headStyles: {
@@ -1045,7 +1111,20 @@ export const exportService = {
       bodyStyles: { fontSize: 9, textColor: DOC.textPrimary },
       alternateRowStyles: { fillColor: DOC.rowAlt },
       styles: { cellPadding: 3, lineColor: DOC.border, lineWidth: 0.3 },
-      margin: { left: marginLeft, right: marginRight }
+      margin: { left: marginLeft, right: marginRight },
+      didDrawCell: (data: any) => {
+        if (
+          data.section === 'body' &&
+          data.column?.index === presentationColumnIndex &&
+          data.row?.index !== undefined
+        ) {
+          const rowIndex = data.row.index
+          const url = presentationUrls[rowIndex]
+          if (url) {
+            doc.link(data.cell.x, data.cell.y, data.cell.width, data.cell.height, { url })
+          }
+        }
+      }
     })
 
     yPos = (doc as any).lastAutoTable.finalY + 12
@@ -1098,9 +1177,27 @@ export const exportService = {
     const wb = XLSX.utils.book_new()
     
     // Planilha de Produtos Selecionados
-    const headers = ['#', 'Código', 'Produto', 'Marca', 'Quantidade', 'Unidade', 'Valor Unitário', 'Valor Total']
+    const headers = [
+      '#',
+      'Código',
+      'Produto',
+      'Marca',
+      'Quantidade',
+      'Unidade',
+      'Valor Unitário',
+      'Valor Total',
+      'Apresentação'
+    ]
     const data = produtosSelecionados.map((produto: any, index: number) => {
       const valorTotal = produto.valorUnitario * produto.quantidade
+      const tipoApresentacao =
+        produto.apresentacaoTipo
+          ? produto.apresentacaoTipo === 'pdf'
+            ? 'PDF'
+            : 'Imagem'
+          : produto.apresentacaoUrl
+            ? 'Anexo'
+            : ''
       return [
         index + 1,
         produto.produtoCodigo || '',
@@ -1109,7 +1206,8 @@ export const exportService = {
         produto.quantidade,
         produto.unidadeMedida,
         produto.valorUnitario,
-        valorTotal
+        valorTotal,
+        produto.apresentacaoUrl || tipoApresentacao
       ]
     })
     
@@ -1159,7 +1257,7 @@ export const exportService = {
       font: { bold: true, sz: 16, color: { rgb: '4F46E5' } },
       alignment: { horizontal: 'center', vertical: 'center' }
     }
-    ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 7 } }]
+    ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 8 } }]
     
     // Aplicar estilos ao cabeçalho da tabela
     const headerRow = 6
